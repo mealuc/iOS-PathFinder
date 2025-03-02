@@ -9,6 +9,7 @@ import Foundation
 
 class LoginModel: ObservableObject {
     @Published var password: String = ""
+    @Published var email: String = ""
     @Published private var _errorMessage: String?
     
     var errorMessage: String? {

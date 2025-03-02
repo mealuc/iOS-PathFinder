@@ -77,5 +77,4 @@ struct RegisterView: View {
     RegisterView()
 }
 // We musnt go back with NavigationLink
-// First letter can not be mandatory we can write lowercase in inputs
 // We can go redirect account page after successful register process

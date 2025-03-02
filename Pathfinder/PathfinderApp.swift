@@ -11,7 +11,6 @@ import FirebaseCore
 
 class AppState : ObservableObject {
     @Published var isLoggedIn: Bool = false
-    @Published var email: String = ""
 }
 
 @main

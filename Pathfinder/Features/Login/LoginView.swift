@@ -16,14 +16,14 @@ struct LoginView: View {
                     .bold()
                     .padding()
                 
-                TextField("Email", text: $appState.email)
+                TextField("Email", text: $loginModel.email)
                     .modifier(FieldModifier())
                 
                 SecureField("Password", text: $loginModel.password)
                     .modifier(FieldModifier())
                 
                 Button(action: {
-                    AuthService.userLoginAuthanticate(email: appState.email, password: loginModel.password, loginModel: loginModel) { result in
+                    AuthService.userLoginAuthanticate(email: loginModel.email, password: loginModel.password, loginModel: loginModel) { result in
                         if result {
                             appState.isLoggedIn = true
                         }
@@ -84,6 +84,8 @@ struct FieldModifier: ViewModifier {
             .frame(width: 300, height: 40)
             .background(Color.black.opacity(0.1))
             .cornerRadius(10)
+            .autocapitalization(.none)
+            .autocorrectionDisabled(true)
     }
 }
 
@@ -92,5 +94,3 @@ struct FieldModifier: ViewModifier {
         .environmentObject(AppState())
         .environmentObject(LoginModel())
 }
-
-// First letter can not be mandatory we can write lowercase in inputs
