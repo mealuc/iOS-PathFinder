@@ -21,7 +21,7 @@ struct PathfinderApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(AppState())
+                .environmentObject(appState)
         }
     }
 }
