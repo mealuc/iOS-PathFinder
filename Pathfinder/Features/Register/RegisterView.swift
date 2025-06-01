@@ -10,6 +10,7 @@ import SwiftUI
 struct RegisterView: View {
     @StateObject var user = User()
     @StateObject var registerModel = RegisterModel()
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         NavigationView {
@@ -62,10 +63,9 @@ struct RegisterView: View {
                         .frame(width: 300)
                 }
                 
-                NavigationLink(destination: LoginView()){
-                    Text("Already have an account?")
-                        .frame(height: 30)
-                }
+                    Button("Already have an account?"){
+                        dismiss()
+                    }
             }
             .padding()
         }

@@ -7,6 +7,7 @@ import SwiftUI
 struct LoginView: View {
     @EnvironmentObject var appState : AppState
     @StateObject var loginModel = LoginModel()
+    @State private var showRegisterView : Bool = false
     
     var body: some View {
         NavigationView {
@@ -66,14 +67,19 @@ struct LoginView: View {
                 Text("Don't have an account?")
                     .padding(.top)
                 
-                NavigationLink(destination: RegisterView()) {
+                Button (action: {showRegisterView = true}) {
                     Text("Register")
-                        .frame(height: 30)
+                        .foregroundColor(Color.blue)
                 }
+                .padding()
+                    
             }
             .padding()
         }
         .navigationTitle("Login")
+        .fullScreenCover(isPresented: $showRegisterView){
+            RegisterView()
+        }
     }
 }
 
