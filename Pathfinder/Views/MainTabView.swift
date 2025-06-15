@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct Account: View {
+struct MainTabView: View {
     var body: some View {
         TabView {
             
@@ -26,6 +26,6 @@ struct Account: View {
 
 
 #Preview {
-    Account()
+    MainTabView()
         .environmentObject(AppState())
 }

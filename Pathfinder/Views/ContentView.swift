@@ -16,7 +16,7 @@ struct ContentView: View {
         
         Group {
             if appState.isLoggedIn {
-                Account()
+                MainTabView()
             }
             else {
                 LoginView()

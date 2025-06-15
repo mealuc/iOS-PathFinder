@@ -15,7 +15,7 @@ struct RegisterView: View {
     var body: some View {
         NavigationView {
             VStack {
-
+                Spacer()
                 Text("Register")
                     .font(.title)
                     .bold()
@@ -45,7 +45,11 @@ struct RegisterView: View {
                 .frame(width: 300, height: 40)
                 
                 Button(action: {
-                    RegisterService.userRegister(user: user, registerModel: registerModel)
+                    RegisterService.userRegister(user: user, registerModel: registerModel) { success in
+                        if success {
+                            dismiss()
+                        }
+                    }
                 }) {
                     Text("Register")
                         .foregroundStyle(Color.white)
@@ -66,7 +70,23 @@ struct RegisterView: View {
                     Button("Already have an account?"){
                         dismiss()
                     }
-            }
+                
+                    Spacer()
+                
+                Button(action: {
+                    
+                }){
+                    Text("I WANT TO BE SELLER")
+                        .frame(width: 200)
+                        .padding(5)
+                        .foregroundStyle(Color.blue)
+                        .bold()
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue, lineWidth: 2)
+                        }
+                    }
+                }
             .padding()
         }
         .navigationTitle("Login")

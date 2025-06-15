@@ -60,5 +60,4 @@ struct AccountView: View {
 #Preview {
     AccountView()
         .environmentObject(AppState())
-        .environmentObject(AccountModel())
 }

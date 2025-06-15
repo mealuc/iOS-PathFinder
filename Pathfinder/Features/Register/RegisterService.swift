@@ -16,15 +16,19 @@ let db = Firestore.firestore()
 class RegisterService {
     @EnvironmentObject var registerModel: RegisterModel
     // User register area
-    static func userRegister(user: User, registerModel: RegisterModel) {
+    static func userRegister(user: User, registerModel: RegisterModel, completion: @escaping (Bool) -> Void) {
         Auth.auth().createUser(withEmail: user.email, password: user.password) { authResult, error in
             guard error == nil else {
                 print("Error occured while registered!: \(error?.localizedDescription)")
                 registerModel.errorMessage = "\(error!.localizedDescription)"
+                completion(false)
                 return
             }
             
-            guard let userID = authResult?.user.uid else { return }
+            guard let userID = authResult?.user.uid else {
+                completion(false)
+                return
+            }
             
             let userData: [String: Any] = [
                 "name": user.name,
@@ -40,9 +44,11 @@ class RegisterService {
                 if let e = error {
                     print("Error occured while user's data registered!: \(e.localizedDescription)")
                     registerModel.errorMessage = "\(e.localizedDescription)"
+                    completion(false)
                     return
                 } else {
                     print("User registered successfully!")
+                    completion(true)
                 }
             }
         }
