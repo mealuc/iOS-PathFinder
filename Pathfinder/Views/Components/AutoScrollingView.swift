@@ -23,7 +23,6 @@ struct AutoScrollingView<Data, Content>: View where Data: Identifiable, Content:
     }
     
     var body: some View {
-        GeometryReader { geo in
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: spacing) {
                     ForEach(itemsCopy) { item in
@@ -50,7 +49,6 @@ struct AutoScrollingView<Data, Content>: View where Data: Identifiable, Content:
                         handleUserInteraction()
                     }
             )
-        }
     }
 
     func startAutoScroll() {
