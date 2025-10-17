@@ -17,7 +17,7 @@ struct ProductDetailView: View {
                     .background(.blue)
                     .cornerRadius(8)
                 
-                Text("Map")
+                MapView()
                     .frame(width: commonWidth, height: 300)
                     .background(.blue)
                     .cornerRadius(8)

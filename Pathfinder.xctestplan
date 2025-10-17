@@ -1,0 +1,29 @@
+{
+  "configurations" : [
+    {
+      "id" : "2AD2D554-30A4-4106-9624-873DD7A6F5FF",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "locationScenario" : {
+      "identifier" : "Warsaw, Poland",
+      "referenceType" : "built-in"
+    },
+    "performanceAntipatternCheckerEnabled" : true,
+    "region" : "TR",
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Pathfinder.xcodeproj",
+      "identifier" : "300F847E2D35352C0082581F",
+      "name" : "Pathfinder"
+    }
+  },
+  "testTargets" : [
+
+  ],
+  "version" : 1
+}

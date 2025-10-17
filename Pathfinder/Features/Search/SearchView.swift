@@ -41,7 +41,7 @@ struct SearchView: View {
                     }
             }
             .frame(height: 75)
-                        
+            
             NavigationStack {
                 VStack {
                     ScrollView(.vertical, showsIndicators: false) {
@@ -51,6 +51,7 @@ struct SearchView: View {
                                     .frame(width: 350, height: 75)
                                     .background(.blue)
                                     .cornerRadius(10)
+                                    .foregroundStyle(.white)
                             }
                         }
                     }
@@ -59,8 +60,6 @@ struct SearchView: View {
                     
                 }
             }
-            // use List function for listing vertically. Also it has itself scrolling mechanism.
-            
             Spacer()
         }
         .onAppear {
