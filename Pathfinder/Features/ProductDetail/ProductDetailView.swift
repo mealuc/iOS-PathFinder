@@ -18,7 +18,7 @@ struct ProductDetailView: View {
                     .cornerRadius(8)
                 
                 MapView()
-                    .frame(width: commonWidth, height: 300)
+                    .frame(width: commonWidth, height: 400)
                     .background(.blue)
                     .cornerRadius(8)
                 
@@ -30,15 +30,9 @@ struct ProductDetailView: View {
                 )
             }
             .foregroundStyle(.white)
-            .blur(radius: isFilterOpen ? 3 : 0)
-            .onTapGesture {
-                withAnimation(.spring()){
-                    isFilterOpen = false
-                }
-            }
             
             if isFilterOpen {
-                FilterMenu(
+                FilterMenuModal(
                     isFilterOpen: $isFilterOpen,
                     selectedFilter: $selectedFilter,
                     commonWidth: commonWidth

@@ -10,14 +10,19 @@ import SwiftUI
 struct SearchView: View {
     @State private var searchText: String = ""
     @StateObject var storeService = StoreService()
+    @StateObject var productService = ProductService()
     @StateObject var addStoreService = AddStores()
+    @StateObject var addProductService = AddProduct()
     
-    let productArray = ["Product 1", "Product 2", "Product 3", "Product 4", "Product 5", "Product 6", "Product 7", "Product 8"]
     var body: some View {
         VStack {
-            
+            NavigationStack {
             Button("Add Dummy Store"){
                 addStoreService.addStore()
+            }
+                
+            Button("Add Dummy Product"){
+                addProductService.addProduct()
             }
             
             Spacer()
@@ -42,12 +47,11 @@ struct SearchView: View {
             }
             .frame(height: 75)
             
-            NavigationStack {
                 VStack {
                     ScrollView(.vertical, showsIndicators: false) {
-                        ForEach(productArray, id: \.self) { data in
-                            NavigationLink ( destination: ProductDetailView(productName: data)) {
-                                Text(data)
+                        ForEach(productService.products) { data in
+                            NavigationLink ( destination: ProductDetailView(productName: data.productName)) {
+                                Text(data.productName)
                                     .frame(width: 350, height: 75)
                                     .background(.blue)
                                     .cornerRadius(10)
@@ -64,6 +68,7 @@ struct SearchView: View {
         }
         .onAppear {
             storeService.fetchStores()
+            productService.fetchProducts()
         }
     }
 }

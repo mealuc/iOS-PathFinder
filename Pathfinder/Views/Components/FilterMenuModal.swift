@@ -7,13 +7,23 @@ enum filterType: String, CaseIterable {
     case price = "Price"
 }
 
-struct FilterMenu: View {
+struct FilterMenuModal: View {
     
     @Binding var isFilterOpen: Bool
     @Binding var selectedFilter: filterType
     var commonWidth: CGFloat
     
     var body: some View {
+        
+        Color.black.opacity(0.2)
+            .ignoresSafeArea()
+            .onTapGesture {
+                withAnimation(.spring()){
+                    isFilterOpen = false
+                }
+            }
+            .allowsHitTesting(true)
+        
         VStack(spacing: 10){
             ForEach (filterType.allCases, id: \.self){ type in
                 Button(type.rawValue){

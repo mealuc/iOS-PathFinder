@@ -8,3 +8,10 @@ struct Store: Identifiable, Codable {
     var storeName: String
     var storeOwnerId: String
 }
+
+struct Product: Identifiable, Codable {
+    @DocumentID var id: String?
+    var productId: String
+    var productName: String
+    var productCategory: String
+}
