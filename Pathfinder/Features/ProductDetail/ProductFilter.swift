@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ProductFilter: View {
     let commonWidth: CGFloat
+    let productStocks: [ProductStock]
     let productArray: [String]
     
     @State private var expandedItem: String? = nil
@@ -47,21 +48,23 @@ struct ProductFilter: View {
         .frame(width: commonWidth)
         
         ScrollView(.vertical, showsIndicators: false) {
-            ForEach(productArray, id: \.self) { data in
+            ForEach(productStocks, id: \.id) { data in
+                let storeId = data.storeId
+                
                 Button(action: {
                     withAnimation(.easeInOut){
-                        expandedItem = (expandedItem == data) ? nil : data
+                        expandedItem = (expandedItem == storeId) ? nil : storeId
                     }
                 }){
-                    Text(data)
+                    Text(storeId)
                         .frame(width: commonWidth, height: 50)
                 }
                 .background(.blue)
                 .cornerRadius(8)
-                .foregroundStyle(expandedItem == data ? .yellow : .white)
+                .foregroundStyle(expandedItem == storeId ? .yellow : .white)
                 
-                if expandedItem == data {
-                    Text("\(data) Detail")
+                if expandedItem == storeId {
+                    Text("\(storeId) Detail")
                         .frame(width: commonWidth, height: .infinity)
                         .padding()
                         .background(Color.red.opacity(0.2))

@@ -4,10 +4,12 @@ import FirebaseAuth
 import SwiftUI
 import Foundation /* Necessary for uuidString func */
 
-class StoreService: ObservableObject {
+class BaseFirestoreService {
+    let db = Firestore.firestore()
+}
+
+class StoreService: BaseFirestoreService, ObservableObject {
     @Published var stores: [Store] = []
-    
-    private let db = Firestore.firestore()
     
     func fetchStores() {
         db.collection("stores").getDocuments { snapshot, error in
@@ -23,11 +25,9 @@ class StoreService: ObservableObject {
     }
 }
 
-class AddStores: ObservableObject {
-    let db = Firestore.firestore()
+class AddStores: BaseFirestoreService {
     
     func addStore() {
-        
         let randomStoreName = "Store \(Int.random(in: 1...1000))"
         let randomStoreId = UUID().uuidString
         
@@ -59,10 +59,8 @@ class AddStores: ObservableObject {
     }
 }
 
-class ProductService: ObservableObject {
+class ProductService: BaseFirestoreService, ObservableObject {
     @Published var products: [Product] = []
-    
-    private let db = Firestore.firestore()
     
     func fetchProducts() {
         db.collection("products").getDocuments { snapshot, error in
@@ -83,8 +81,7 @@ class ProductService: ObservableObject {
     }
 }
 
-class AddProduct: ObservableObject {
-    let db = Firestore.firestore()
+class AddProduct: BaseFirestoreService {
     
     func addProduct() {
         let randomProductName = "Product \(Int.random(in: 1...1000))"
@@ -103,6 +100,46 @@ class AddProduct: ObservableObject {
             }
             else {
                 print("Product added successfully")
+            }
+        }
+    }
+}
+
+class AddProductStock: BaseFirestoreService {
+    
+    var allProducts = ProductService()
+    var allStores = StoreService()
+
+    
+    func prepareForAddingStock() {
+        allProducts.fetchProducts()
+        allStores.fetchStores()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: addStock)
+    }
+    
+    func addStock() {
+        
+        let randomStockQuantity = Int.random(in: 1...100)
+        
+        guard let randomProductId = allProducts.products.randomElement()?.productId,
+              let randomStoreId = allStores.stores.randomElement()?.storeId else {
+            print("Couldn't find a random product or store ID")
+            return
+        }
+        
+        let newStockData: [String: Any] = [
+            "productId": randomProductId,
+            "storeId": randomStoreId,
+            "stockQuantity": randomStockQuantity,
+        ]
+        
+        db.collection("productStocks").addDocument(data: newStockData) { error in
+            if let error = error {
+                print("Error adding stock: \(error.localizedDescription)")
+            }
+            else {
+                print("Stock added for \(randomProductId) to \(randomStoreId) successfully")
             }
         }
     }

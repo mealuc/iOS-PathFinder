@@ -2,12 +2,17 @@ import SwiftUI
 
 struct ProductDetailView: View {
     let productName: String
+    let productId: String
     let productArray = ["Location 1", "Location 2", "Location 3", "Location 4", "Location 5"]
     let commonWidth: CGFloat = 350
     
+    @State private var productStocks: [ProductStock] = []
+    @State private var isLoading: Bool = true
     @State private var isFilterOpen: Bool = false
     @State private var selectedFilter: filterType = .distance
-
+    @State private var errorMessage: String?
+    
+    private let stockFetcher = GetProductStock()
     
     var body: some View {
         ZStack {
@@ -24,10 +29,16 @@ struct ProductDetailView: View {
                 
                 ProductFilter(
                     commonWidth: commonWidth,
+                    productStocks: productStocks,
                     productArray: productArray,
                     isFilterOpen: $isFilterOpen,
                     selectedFilter: $selectedFilter
                 )
+            }
+            .onAppear() {
+                Task {
+                    await loadStocks()
+                }
             }
             .foregroundStyle(.white)
             
@@ -40,9 +51,20 @@ struct ProductDetailView: View {
             }
         }
     }
+    
+    func loadStocks() async {
+        do{
+            let result = try await stockFetcher.fetchStocks(for: productId)
+            productStocks = result
+            isLoading = false
+        } catch {
+            errorMessage = error.localizedDescription
+            isLoading = false
+        }
+    }
 }
 
 #Preview {
-    ProductDetailView(productName: "Test Ürün")
+    ProductDetailView(productName: "Test Ürün", productId: "ABC1")
 }
 

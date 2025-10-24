@@ -1,4 +1,5 @@
 import CoreLocation
+import FirebaseFirestore
 
 class LocationManagerAuthorization: NSObject, CLLocationManagerDelegate {
     let userLocationManager = CLLocationManager()
@@ -35,5 +36,22 @@ class LocationManagerAuthorization: NSObject, CLLocationManagerDelegate {
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         checkLocationAuthorizationStatus()
+    }
+}
+
+class GetProductStock {
+    var db = Firestore.firestore()
+    
+    func fetchStocks(for productId: String) async throws -> [ProductStock] {
+        let querySnapshot = try await db.collection("productStocks")
+            .whereField("productId", isEqualTo: productId)
+            .whereField("stockQuantity", isGreaterThan: 0)
+            .getDocuments()
+        
+        let stocks = querySnapshot.documents.compactMap { document -> ProductStock? in
+            try? document.data(as: ProductStock.self)
+        }
+        
+        return stocks
     }
 }
