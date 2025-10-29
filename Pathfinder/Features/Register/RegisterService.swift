@@ -19,7 +19,7 @@ class RegisterService {
     static func userRegister(user: User, registerModel: RegisterModel, completion: @escaping (Bool) -> Void) {
         Auth.auth().createUser(withEmail: user.email, password: user.password) { authResult, error in
             guard error == nil else {
-                print("Error occured while registered!: \(error?.localizedDescription)")
+                print("Error occured while registered!: \(String(describing: error?.localizedDescription))")
                 registerModel.errorMessage = "\(error!.localizedDescription)"
                 completion(false)
                 return

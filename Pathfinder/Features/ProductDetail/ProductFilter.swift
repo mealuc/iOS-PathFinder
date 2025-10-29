@@ -46,32 +46,44 @@ struct ProductFilter: View {
             .cornerRadius(8)
         }
         .frame(width: commonWidth)
-        
-        ScrollView(.vertical, showsIndicators: false) {
-            ForEach(productStocks, id: \.id) { data in
-                let storeId = data.storeId
+        if !productStocks.isEmpty{
+            ScrollView(.vertical, showsIndicators: false) {
                 
-                Button(action: {
-                    withAnimation(.easeInOut){
-                        expandedItem = (expandedItem == storeId) ? nil : storeId
+                ForEach(productStocks, id: \.id) { data in
+                    let storeId = data.storeId
+                    let storeName = data.storeName
+                    
+                    Button(action: {
+                        withAnimation(.easeInOut){
+                            expandedItem = (expandedItem == storeId) ? nil : storeId
+                        }
+                    }){
+                        Text(storeName)
+                            .frame(width: commonWidth, height: 50)
                     }
-                }){
-                    Text(storeId)
-                        .frame(width: commonWidth, height: 50)
-                }
-                .background(.blue)
-                .cornerRadius(8)
-                .foregroundStyle(expandedItem == storeId ? .yellow : .white)
-                
-                if expandedItem == storeId {
-                    Text("\(storeId) Detail")
-                        .frame(width: commonWidth, height: .infinity)
-                        .padding()
-                        .background(Color.red.opacity(0.2))
-                        .cornerRadius(8)
-                        .transition(.opacity.combined(with: .move(edge: .top)))
+                    .background(.blue)
+                    .cornerRadius(8)
+                    .foregroundStyle(expandedItem == storeId ? .yellow : .white)
+                    
+                    if expandedItem == storeId {
+                        Text("Price: \(data.productPrice) ₺\n" + "Stock: \(data.stockQuantity)")
+                            .frame(width: commonWidth, height: .infinity)
+                            .multilineTextAlignment(.leading)
+                            .padding()
+                            .background(Color.black.opacity(0.5))
+                            .cornerRadius(8)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                            .multilineTextAlignment(.leading)
+                    }
                 }
             }
+        } else {
+            Text("No products available")
+                .frame(maxWidth: commonWidth, alignment: .init(horizontal: .center, vertical: .center))
+                .padding(20)
+                .cornerRadius(8)
+                .foregroundColor(.red)
         }
+        
     }
 }

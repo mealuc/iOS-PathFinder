@@ -7,6 +7,16 @@ struct Store: Identifiable, Codable {
     var storeId: String
     var storeName: String
     var storeOwnerId: String
+    var storeAddress: String
+    var storeCity: String
+    var storeState: String
+    var storeZip: String
+    var storePhone: String
+    var storeEmail: String
+    var storeLatitude: Double
+    var storeLongitude: Double
+    var storeRating: Double
+    var storeLastUpdated: Date?
 }
 
 struct Product: Identifiable, Codable {

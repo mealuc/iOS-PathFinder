@@ -6,4 +6,6 @@ struct ProductStock: Decodable, Identifiable {
     var productId: String
     var stockQuantity: Int
     var storeId: String
+    var storeName: String
+    var productPrice: Double
 }

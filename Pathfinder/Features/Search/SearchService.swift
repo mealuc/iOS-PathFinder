@@ -35,16 +35,16 @@ class AddStores: BaseFirestoreService {
             "storeName": randomStoreName,
             "storeId": randomStoreId,
             "storeOwnerId": "1331",
-            "address": "123 Main St",
-            "city": "Anytown",
-            "state": "CA",
-            "zip": "90210",
-            "phone": "(555) 555-5555",
-            "email": "newstore@example.com",
-            "latitude": 34.052234,
-            "longitude": -118.243685,
-            "rating": 4.5,
-            "lastUpdated": FieldValue.serverTimestamp()
+            "storeAddress": "123 Main St",
+            "storeCity": "Karabuk",
+            "storeState": "CA",
+            "storeZip": "90210",
+            "storePhone": "(555) 555-5555",
+            "storeEmail": "newstore@example.com",
+            "storeLatitude": 34.052234,
+            "storeLongitude": -118.243685,
+            "storeRating": 4.5,
+            "storeLastUpdated": FieldValue.serverTimestamp()
         ]
         
         
@@ -121,17 +121,22 @@ class AddProductStock: BaseFirestoreService {
     func addStock() {
         
         let randomStockQuantity = Int.random(in: 1...100)
+        let randomPrice: Double = Double.random(in: 1.0...100.0)
         
-        guard let randomProductId = allProducts.products.randomElement()?.productId,
-              let randomStoreId = allStores.stores.randomElement()?.storeId else {
+        guard let randomProduct = allProducts.products.randomElement(),
+              let randomStore = allStores.stores.randomElement()
+              
+        else {
             print("Couldn't find a random product or store ID")
             return
         }
         
         let newStockData: [String: Any] = [
-            "productId": randomProductId,
-            "storeId": randomStoreId,
+            "productId": randomProduct.productId,
+            "storeId": randomStore.storeId,
             "stockQuantity": randomStockQuantity,
+            "storeName": randomStore.storeName,
+            "productPrice": randomPrice
         ]
         
         db.collection("productStocks").addDocument(data: newStockData) { error in
@@ -139,7 +144,7 @@ class AddProductStock: BaseFirestoreService {
                 print("Error adding stock: \(error.localizedDescription)")
             }
             else {
-                print("Stock added for \(randomProductId) to \(randomStoreId) successfully")
+                print("Stock added for \(randomProduct.productId) to \(randomStore.storeId) successfully")
             }
         }
     }
