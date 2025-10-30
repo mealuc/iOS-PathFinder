@@ -3,11 +3,16 @@ import SwiftUI
 struct ProductFilter: View {
     let commonWidth: CGFloat
     let productStocks: [ProductStock]
+    let storeStocks: [Store]
     let productArray: [String]
     
     @State private var expandedItem: String? = nil
     @Binding var isFilterOpen: Bool
     @Binding var selectedFilter: filterType
+    
+    var storeMap: [String: Store] {
+        Dictionary(uniqueKeysWithValues: storeStocks.map { ($0.storeId, $0) })
+    }
     
     var filteredArray: [String] {
         switch selectedFilter {
@@ -21,6 +26,7 @@ struct ProductFilter: View {
             return productArray
         }
     }
+    
     var body: some View {
         
         HStack {
@@ -51,7 +57,11 @@ struct ProductFilter: View {
                 
                 ForEach(productStocks, id: \.id) { data in
                     let storeId = data.storeId
-                    let storeName = data.storeName
+                    let storeStockPrice = String(format: "%.2f", data.productPrice)
+                    let storeData = storeMap[storeId]
+                    let storeRating = String(format: "%.1f", storeData?.storeRating ?? 0.0)
+                    let storeName = storeData?.storeName ?? "Store"
+                    let stockCount = data.stockQuantity
                     
                     Button(action: {
                         withAnimation(.easeInOut){
@@ -66,14 +76,33 @@ struct ProductFilter: View {
                     .foregroundStyle(expandedItem == storeId ? .yellow : .white)
                     
                     if expandedItem == storeId {
-                        Text("Price: \(data.productPrice) ₺\n" + "Stock: \(data.stockQuantity)")
-                            .frame(width: commonWidth, height: .infinity)
+                        VStack() {
+                            Text("""
+                                Price: \(storeStockPrice) ₺
+                                Stock: \(stockCount)
+                                Rating: \(storeRating)
+                                Distance:
+                                """)
                             .multilineTextAlignment(.leading)
-                            .padding()
-                            .background(Color.black.opacity(0.5))
-                            .cornerRadius(8)
                             .transition(.opacity.combined(with: .move(edge: .top)))
                             .multilineTextAlignment(.leading)
+                            
+                            Button(action: {
+                                print()
+                            }) {
+                                Image(systemName: "arrow.turn.down.right")
+                                    .frame(width: 100, height: 30)
+                                    .padding(5)
+                                    .background(.green)
+                                    .cornerRadius(8)
+                            }
+                        }
+                        .frame(width: commonWidth, height: .infinity)
+                        .padding()
+                        .background(Color.black.opacity(0.5))
+                        .cornerRadius(8)
+                        .padding([.leading, .trailing, .bottom], 10)
+                        .padding(.top, 1)
                     }
                 }
             }

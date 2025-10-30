@@ -34,6 +34,7 @@ struct ProductDetailView: View {
                 ProductFilter(
                     commonWidth: commonWidth,
                     productStocks: productStocks,
+                    storeStocks: storeStocks,
                     productArray: productArray,
                     isFilterOpen: $isFilterOpen,
                     selectedFilter: $selectedFilter
