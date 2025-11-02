@@ -5,11 +5,11 @@ struct MapView: View {
     let locationAuth = LocationManagerAuthorization()
     let storeStocks: [Store]
     
-    @State private var route: MKRoute?
-    @State private var cameraPosition: MapCameraPosition = .automatic
+    @EnvironmentObject var mapService: MapService
+    @EnvironmentObject var cameraPosition: CameraPosition
     
     var body: some View {
-        Map(position: $cameraPosition) {
+        Map(position: $cameraPosition.cameraPosition) {
             
             Marker("Home", systemImage: "house.fill" ,coordinate: .Home)
                 .tint(.green)
@@ -24,7 +24,14 @@ struct MapView: View {
                         .background(.green.gradient, in: .circle)
                         .contextMenu {
                             Button("Get Directions", systemImage: "arrow.turn.down.right"){
-                                getDirections(to: CLLocationCoordinate2D(latitude: store.storeLatitude, longitude: store.storeLongitude))
+                                Task {
+                                    if let region = await mapService.getDirections(to: CLLocationCoordinate2D(latitude: store.storeLatitude, longitude: store.storeLongitude)
+                                    ) {
+                                        withAnimation(.easeInOut(duration: 0.4)) {
+                                            cameraPosition.cameraPosition = .region(region)
+                                        }
+                                    }
+                                }
                             }
                         }
                 }
@@ -32,12 +39,10 @@ struct MapView: View {
             
             UserAnnotation()
             
-            if let route{
+            if let route = mapService.route {
                 MapPolyline(route)
                     .stroke(Color.green, lineWidth: 4)
             }
-            
-            
         }
         .onAppear() {
             locationAuth.checkLocationAuthorizationStatus()
@@ -59,48 +64,6 @@ struct MapView: View {
             MapPitchToggle()
             MapScaleView()
         }
-    }
-    
-    func getUserLocation() async -> CLLocationCoordinate2D? {
-        let updates = CLLocationUpdate.liveUpdates()
-        
-        do {
-            let update = try await updates.first { $0.location?.coordinate != nil }
-            return update?.location?.coordinate
-        } catch {
-            print("Error getting location: \(error.localizedDescription)")
-            return nil
-        }
-    }
-    
-    func getDirections(to destination: CLLocationCoordinate2D) {
-        Task {
-            guard let userLocation = await getUserLocation() else { return }
-            
-            let request = MKDirections.Request()
-            request.source = MKMapItem(placemark: .init(coordinate: userLocation))
-            request.destination = MKMapItem(placemark: .init(coordinate: destination))
-            request.transportType = .automobile
-            request.requestsAlternateRoutes = true
-            
-            do {
-                let directions = try await MKDirections(request: request).calculate()
-                route = directions.routes.first
-                
-                if let boundingRect = route?.polyline.boundingMapRect {
-                    let region = MKCoordinateRegion(boundingRect)
-                    await MainActor.run {
-                        withAnimation(.easeInOut(duration: 0.4)) {
-                            cameraPosition = .region(region)
-                        }
-                    }
-                }
-            } catch
-            {
-                print("Error getting directions: \(error.localizedDescription)")
-            }
-        }
-        
     }
 }
 

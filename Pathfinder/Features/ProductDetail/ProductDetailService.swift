@@ -1,4 +1,6 @@
 import CoreLocation
+import SwiftUI
+import MapKit
 import FirebaseFirestore
 
 class LocationManagerAuthorization: NSObject, CLLocationManagerDelegate {
@@ -83,4 +85,48 @@ extension Array {
             Array(self[$0 ..< Swift.min($0 + size, count)])
         }
     }
+}
+
+class MapService: ObservableObject {
+    
+    @Published var route: MKRoute?
+    
+    func getDirections(to destination: CLLocationCoordinate2D) async -> MKCoordinateRegion? {
+        guard let userLocation = await getUserLocation() else { return nil }
+        
+        let request = MKDirections.Request()
+        request.source = MKMapItem(placemark: .init(coordinate: userLocation))
+        request.destination = MKMapItem(placemark: .init(coordinate: destination))
+        request.transportType = .automobile
+        request.requestsAlternateRoutes = true
+        
+        do {
+            let directions = try await MKDirections(request: request).calculate()
+            if let route = directions.routes.first {
+                self.route = route
+                let boundingRect = route.polyline.boundingMapRect
+                let region = MKCoordinateRegion(boundingRect)
+                return region
+            }
+        } catch {
+            print("Error getting route directions: \(error.localizedDescription)")
+        }
+        return nil
+    }
+    
+    func getUserLocation() async -> CLLocationCoordinate2D? {
+        let updates = CLLocationUpdate.liveUpdates()
+        
+        do {
+            let update = try await updates.first { $0.location?.coordinate != nil }
+            return update?.location?.coordinate
+        } catch {
+            print("Error getting user location: \(error.localizedDescription)")
+            return nil
+        }
+    }
+}
+
+class CameraPosition: ObservableObject {
+    @Published var cameraPosition: MapCameraPosition = .automatic
 }

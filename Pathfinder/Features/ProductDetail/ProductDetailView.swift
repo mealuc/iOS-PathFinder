@@ -12,6 +12,8 @@ struct ProductDetailView: View {
     @State private var isFilterOpen: Bool = false
     @State private var selectedFilter: filterType = .distance
     @State private var errorMessage: String?
+    @StateObject private var cameraPosition = CameraPosition()
+    @StateObject private var mapService = MapService()
     
     private let stockFetcher = GetProductStock()
     private let storeFetcher = GetStockedStores()
@@ -55,6 +57,8 @@ struct ProductDetailView: View {
                 )
             }
         }
+        .environmentObject(cameraPosition)
+        .environmentObject(mapService)
     }
     
     func loadStocks() async {

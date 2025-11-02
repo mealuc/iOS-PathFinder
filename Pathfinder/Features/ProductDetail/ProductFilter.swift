@@ -1,4 +1,5 @@
 import SwiftUI
+import MapKit
 
 struct ProductFilter: View {
     let commonWidth: CGFloat
@@ -9,7 +10,9 @@ struct ProductFilter: View {
     @State private var expandedItem: String? = nil
     @Binding var isFilterOpen: Bool
     @Binding var selectedFilter: filterType
-    
+    @EnvironmentObject var cameraPosition: CameraPosition
+    @EnvironmentObject var mapService: MapService
+
     var storeMap: [String: Store] {
         Dictionary(uniqueKeysWithValues: storeStocks.map { ($0.storeId, $0) })
     }
@@ -58,10 +61,12 @@ struct ProductFilter: View {
                 ForEach(productStocks, id: \.id) { data in
                     let storeId = data.storeId
                     let storeStockPrice = String(format: "%.2f", data.productPrice)
+                    let stockCount = data.stockQuantity
                     let storeData = storeMap[storeId]
                     let storeRating = String(format: "%.1f", storeData?.storeRating ?? 0.0)
                     let storeName = storeData?.storeName ?? "Store"
-                    let stockCount = data.stockQuantity
+                    let storeLatitude = storeData?.storeLatitude ?? 0.0
+                    let storeLongitude = storeData?.storeLongitude ?? 0.0
                     
                     Button(action: {
                         withAnimation(.easeInOut){
@@ -88,7 +93,14 @@ struct ProductFilter: View {
                             .multilineTextAlignment(.leading)
                             
                             Button(action: {
-                                print()
+                                Task {
+                                    if let region = await mapService.getDirections(to: CLLocationCoordinate2D(latitude: storeLatitude, longitude: storeLongitude)
+                                    ) {
+                                        withAnimation(.easeInOut(duration: 0.4)) {
+                                            cameraPosition.cameraPosition = .region(region)
+                                        }
+                                    }
+                                }
                             }) {
                                 Image(systemName: "arrow.turn.down.right")
                                     .frame(width: 100, height: 30)
@@ -96,6 +108,7 @@ struct ProductFilter: View {
                                     .background(.green)
                                     .cornerRadius(8)
                             }
+                            
                         }
                         .frame(width: commonWidth, height: .infinity)
                         .padding()
