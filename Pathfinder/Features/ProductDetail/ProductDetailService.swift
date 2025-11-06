@@ -90,9 +90,11 @@ extension Array {
 class MapService: ObservableObject {
     
     @Published var route: MKRoute?
+    @Published var userLocation: CLLocationCoordinate2D?
     
     func getDirections(to destination: CLLocationCoordinate2D) async -> MKCoordinateRegion? {
-        guard let userLocation = await getUserLocation() else { return nil }
+        
+        guard let userLocation = self.userLocation else { return nil }
         
         let request = MKDirections.Request()
         request.source = MKMapItem(placemark: .init(coordinate: userLocation))
@@ -103,7 +105,9 @@ class MapService: ObservableObject {
         do {
             let directions = try await MKDirections(request: request).calculate()
             if let route = directions.routes.first {
-                self.route = route
+                await MainActor.run {
+                    self.route = route
+                }
                 let boundingRect = route.polyline.boundingMapRect
                 let region = MKCoordinateRegion(boundingRect)
                 return region
@@ -114,19 +118,34 @@ class MapService: ObservableObject {
         return nil
     }
     
-    func getUserLocation() async -> CLLocationCoordinate2D? {
+    func getUserLocation() async {
         let updates = CLLocationUpdate.liveUpdates()
         
         do {
             let update = try await updates.first { $0.location?.coordinate != nil }
-            return update?.location?.coordinate
+            if let userCoords = update?.location?.coordinate {
+                await MainActor.run {
+                    self.userLocation = userCoords
+                }
+            }
         } catch {
             print("Error getting user location: \(error.localizedDescription)")
-            return nil
         }
+    }
+    
+    func calculateDistances (for stores: [Store]) async -> [String: Double] {
+        
+        guard let userLocation = self.userLocation else { return [:] }
+        let userCoords = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
+        return Dictionary(uniqueKeysWithValues: stores.map {
+            let storeCoords = CLLocation(latitude: $0.storeLatitude, longitude: $0.storeLongitude)
+            return ($0.storeId, storeCoords.distance(from: userCoords))
+        })
     }
 }
 
 class CameraPosition: ObservableObject {
     @Published var cameraPosition: MapCameraPosition = .automatic
 }
+
+

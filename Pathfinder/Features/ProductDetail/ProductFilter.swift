@@ -5,28 +5,37 @@ struct ProductFilter: View {
     let commonWidth: CGFloat
     let productStocks: [ProductStock]
     let storeStocks: [Store]
-    let productArray: [String]
     
     @State private var expandedItem: String? = nil
     @Binding var isFilterOpen: Bool
     @Binding var selectedFilter: filterType
     @EnvironmentObject var cameraPosition: CameraPosition
     @EnvironmentObject var mapService: MapService
-
+    @State private var distanceFilter: [String: Double] = [:]
+    
     var storeMap: [String: Store] {
         Dictionary(uniqueKeysWithValues: storeStocks.map { ($0.storeId, $0) })
     }
     
-    var filteredArray: [String] {
+    
+    var filteredArray: [ProductStock] {
         switch selectedFilter {
         case .distance:
-            return productArray.sorted()
+            return productStocks.sorted {
+                let d1 = distanceFilter[$0.storeId] ?? 0.0
+                let d2 = distanceFilter[$1.storeId] ?? 0.0
+                return d1 < d2
+            }
         case .rating:
-            return productArray.reversed()
+            return productStocks.sorted {
+                let r1 = storeMap[$0.storeId]?.storeRating ?? 0.0
+                let r2 = storeMap[$1.storeId]?.storeRating ?? 0.0
+                return r1 > r2
+            }
         case .amount:
-            return productArray.sorted()
+            return productStocks.sorted { $0.stockQuantity > $1.stockQuantity }
         case .price:
-            return productArray
+            return productStocks.sorted { $0.productPrice < $1.productPrice }
         }
     }
     
@@ -55,15 +64,26 @@ struct ProductFilter: View {
             .cornerRadius(8)
         }
         .frame(width: commonWidth)
+        .onChange(of: storeStocks){
+            Task {
+                await mapService.getUserLocation()
+                if let _ = mapService.userLocation {
+                    distanceFilter = await mapService.calculateDistances(for: storeStocks)
+                } else {
+                    print("User location not ready yet.")
+                }
+            }
+        }
         if !productStocks.isEmpty{
             ScrollView(.vertical, showsIndicators: false) {
                 
-                ForEach(productStocks, id: \.id) { data in
+                ForEach(filteredArray, id: \.id) { data in
                     let storeId = data.storeId
                     let storeStockPrice = String(format: "%.2f", data.productPrice)
                     let stockCount = data.stockQuantity
                     let storeData = storeMap[storeId]
                     let storeRating = String(format: "%.1f", storeData?.storeRating ?? 0.0)
+                    let storeDistance = distanceFilter[storeId] ?? 0.0
                     let storeName = storeData?.storeName ?? "Store"
                     let storeLatitude = storeData?.storeLatitude ?? 0.0
                     let storeLongitude = storeData?.storeLongitude ?? 0.0
@@ -86,7 +106,7 @@ struct ProductFilter: View {
                                 Price: \(storeStockPrice) ₺
                                 Stock: \(stockCount)
                                 Rating: \(storeRating)
-                                Distance:
+                                Distance: \(storeDistance, specifier: "%.0f") m
                                 """)
                             .multilineTextAlignment(.leading)
                             .transition(.opacity.combined(with: .move(edge: .top)))
@@ -110,7 +130,7 @@ struct ProductFilter: View {
                             }
                             
                         }
-                        .frame(width: commonWidth, height: .infinity)
+                        .frame(width: commonWidth)
                         .padding()
                         .background(Color.black.opacity(0.5))
                         .cornerRadius(8)

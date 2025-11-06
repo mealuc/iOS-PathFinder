@@ -14,7 +14,6 @@ struct AutoScrollingView<Data, Content>: View where Data: Identifiable, Content:
     @State private var timer: Timer?
     @State private var lastInteraction = Date()
     @State private var scrollProxy: ScrollViewProxy?
-    
     @State private var totalOffset: CGFloat = 0
     @State private var itemsCopy: [Data] = []
     
@@ -27,7 +26,6 @@ struct AutoScrollingView<Data, Content>: View where Data: Identifiable, Content:
                 HStack(spacing: spacing) {
                     ForEach(itemsCopy) { item in
                         content(item)
-                            .frame(width: itemWidth)
                             .id(item.id)
                     }
                 }

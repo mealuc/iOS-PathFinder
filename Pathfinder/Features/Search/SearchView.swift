@@ -37,18 +37,14 @@ struct SearchView: View {
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(12)
                     .frame(width: 350, height: 50)
-                
-                Text("\(searchText)")
-                
+                                
                 AutoScrollingView(items: storeService.stores, itemWidth: 100) { storeData in
                     Text(storeData.storeName)
-                        .frame(width: 100, height: 75)
+                        .padding()
+                        .fixedSize()
                         .background(Color.blue)
                         .foregroundColor(.white)
                         .cornerRadius(10)
-                        .onTapGesture {
-                            print("\(storeData.storeName) tıklandı, linke gidiliyor!")
-                        }
                 }
                 .frame(height: 75)
                 

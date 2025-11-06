@@ -19,7 +19,7 @@ class AccountService {
             print("User signed out succesfully!")
             completion(true)
             
-        } catch var signOutError as NSError {
+        } catch let signOutError as NSError {
             print("Error signing out: \(signOutError)")
             accountModel.errorMessage = "\(signOutError.localizedDescription)"
             completion(false)

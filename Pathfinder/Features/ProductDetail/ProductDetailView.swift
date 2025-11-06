@@ -3,7 +3,6 @@ import SwiftUI
 struct ProductDetailView: View {
     let productName: String
     let productId: String
-    let productArray = ["Location 1", "Location 2", "Location 3", "Location 4", "Location 5"]
     let commonWidth: CGFloat = 350
     
     @State private var storeStocks: [Store] = []
@@ -29,7 +28,7 @@ struct ProductDetailView: View {
                 MapView(
                     storeStocks: storeStocks
                 )
-                .frame(width: commonWidth, height: 400)
+                .frame(width: commonWidth, height: 300)
                 .background(.blue)
                 .cornerRadius(8)
                 
@@ -37,7 +36,6 @@ struct ProductDetailView: View {
                     commonWidth: commonWidth,
                     productStocks: productStocks,
                     storeStocks: storeStocks,
-                    productArray: productArray,
                     isFilterOpen: $isFilterOpen,
                     selectedFilter: $selectedFilter
                 )
@@ -63,10 +61,8 @@ struct ProductDetailView: View {
     
     func loadStocks() async {
         do{
-            let stockResult = try await stockFetcher.fetchStocks(for: productId)
-            let storeResult = try await storeFetcher.fetchStores(for: stockResult)
-            productStocks = stockResult
-            storeStocks = storeResult
+            productStocks = try await stockFetcher.fetchStocks(for: productId)
+            storeStocks = try await storeFetcher.fetchStores(for: productStocks)
             isLoading = false
         } catch {
             errorMessage = error.localizedDescription

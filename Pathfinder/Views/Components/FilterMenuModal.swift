@@ -35,7 +35,7 @@ struct FilterMenuModal: View {
             }
         }
         .padding(.vertical, 10)
-        .frame(width: commonWidth / 2, height: .infinity)
+        .frame(width: commonWidth / 2)
         .background(Color.blue)
         .cornerRadius(8)
         .shadow(radius: 10)
