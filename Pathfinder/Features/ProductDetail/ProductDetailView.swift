@@ -21,7 +21,7 @@ struct ProductDetailView: View {
         ZStack {
             VStack {
                 Text(productName)
-                    .frame(width: commonWidth, height: 25)
+                    .frame(width: commonWidth, height: 45)
                     .background(.blue)
                     .cornerRadius(8)
                 
@@ -47,7 +47,7 @@ struct ProductDetailView: View {
             }
             .foregroundStyle(.white)
             
-            if isFilterOpen {
+            if isFilterOpen { 
                 FilterMenuModal(
                     isFilterOpen: $isFilterOpen,
                     selectedFilter: $selectedFilter,

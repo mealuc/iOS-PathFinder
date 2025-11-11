@@ -56,7 +56,8 @@ struct ProductFilter: View {
                     isFilterOpen = !isFilterOpen
                 }
             }){
-                Text("Filter")
+                Image(systemName: "line.3.horizontal.decrease.circle")
+                    .font(.system(size: 25))
                     .frame(width: 100, height: 50)
             }
             .lineLimit(1)
@@ -101,41 +102,50 @@ struct ProductFilter: View {
                     .foregroundStyle(expandedItem == storeId ? .yellow : .white)
                     
                     if expandedItem == storeId {
-                        VStack() {
-                            Text("""
-                                Price: \(storeStockPrice) ₺
-                                Stock: \(stockCount)
-                                Rating: \(storeRating)
-                                Distance: \(storeDistance, specifier: "%.0f") m
-                                """)
-                            .multilineTextAlignment(.leading)
-                            .transition(.opacity.combined(with: .move(edge: .top)))
-                            .multilineTextAlignment(.leading)
-                            
-                            Button(action: {
-                                Task {
-                                    if let region = await mapService.getDirections(to: CLLocationCoordinate2D(latitude: storeLatitude, longitude: storeLongitude)
-                                    ) {
-                                        withAnimation(.easeInOut(duration: 0.4)) {
-                                            cameraPosition.cameraPosition = .region(region)
+                        ZStack(alignment: .topTrailing) {
+                            VStack() {
+                                Text("""
+                                        Price: \(storeStockPrice) ₺
+                                        Stock: \(stockCount)
+                                        Estimated Distance: \(storeDistance, specifier: "%.0f") m
+                                        """)
+                                .multilineTextAlignment(.leading)
+                                .transition(.opacity.combined(with: .move(edge: .top)))
+                                .multilineTextAlignment(.leading)
+                                
+                                Button(action: {
+                                    Task {
+                                        if let region = await mapService.getDirections(to: CLLocationCoordinate2D(latitude: storeLatitude, longitude: storeLongitude)
+                                        ) {
+                                            withAnimation(.easeInOut(duration: 0.4)) {
+                                                cameraPosition.cameraPosition = .region(region)
+                                            }
                                         }
                                     }
+                                }) {
+                                    Image(systemName: "location.fill")
+                                        .frame(width: 100, height: 30)
+                                        .padding(5)
+                                        .background(.green)
+                                        .cornerRadius(8)
                                 }
-                            }) {
-                                Image(systemName: "arrow.turn.down.right")
-                                    .frame(width: 100, height: 30)
-                                    .padding(5)
-                                    .background(.green)
-                                    .cornerRadius(8)
                             }
+                            .frame(width: commonWidth)
+                            .padding()
+                            .background(Color.black.opacity(0.5))
+                            .cornerRadius(8)
+                            .padding([.leading, .trailing, .bottom], 10)
+                            .padding(.top, 1)
                             
+                            HStack {
+                                Image(systemName: "star")
+                                    .font(.system(size: 15))
+                                    .foregroundColor(.yellow)
+                                    .padding(-6)
+                                Text("\(storeRating)")
+                            }
+                            .padding(20)
                         }
-                        .frame(width: commonWidth)
-                        .padding()
-                        .background(Color.black.opacity(0.5))
-                        .cornerRadius(8)
-                        .padding([.leading, .trailing, .bottom], 10)
-                        .padding(.top, 1)
                     }
                 }
             }
@@ -148,4 +158,8 @@ struct ProductFilter: View {
         }
         
     }
+}
+
+#Preview {
+    ProductDetailView(productName: "Test Ürün", productId: "5CCB3AE8-4791-4B83-9498-82AE71BECACE")
 }
