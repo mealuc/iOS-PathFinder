@@ -20,3 +20,11 @@ class AccountModel: ObservableObject {
     }
 }
 
+struct Favorite: Identifiable, Codable {
+    var id: String
+    var userId: String
+    var storeId: String
+    var productId: String
+    var timestamp: Date = Date()
+}
+

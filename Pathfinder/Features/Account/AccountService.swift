@@ -29,7 +29,7 @@ class AccountService {
     static func getUserData(user: User, accountModel: AccountModel) {
         guard let userID = Auth.auth().currentUser?.uid else { return }
         
-       db.collection("users").document(userID).getDocument { document, e in
+        db.collection("users").document(userID).getDocument { document, e in
             if let error = e {
                 print("Error getting user data: \(error)")
                 accountModel.errorMessage = "\(error.localizedDescription)"
@@ -43,5 +43,72 @@ class AccountService {
                 } // We use DispatchQueue because we want ui processes on main thread (all of ui proccesses must processed on main thread if not app will freeze)
             }
         }
+    }
+}
+
+@MainActor
+class FavoriteService: ObservableObject {
+    @Published var favorites: [Favorite] = []
+    
+    var currentUserId: String? {
+        Auth.auth().currentUser?.uid
+    }
+    
+    func favoriteKey (userId: String, storeId: String, productId: String) -> String {
+        return "\(userId)#\(storeId)#\(productId)"
+    }
+    
+    func addFavorite (storeId: String, productId: String) async throws -> String {
+        do {
+            guard let userId = currentUserId else { return "" }
+            
+            let documentId = favoriteKey(userId: userId, storeId: storeId, productId: productId)
+            
+            let favoriteData = Favorite(id: documentId, userId: userId, storeId: storeId, productId: productId)
+            
+            try db.collection("favorites").document(documentId).setData(from: favoriteData)
+            
+            return documentId
+            
+        } catch {
+            print("Error adding favorite: \(error)")
+            throw error
+        }
+    }
+    
+    func fetchUserFavorites() async throws {
+        do {
+            guard let userId = currentUserId else {
+                favorites = []
+                return
+            }
+            
+            let query = try await db.collection("favorites").whereField("userId", isEqualTo: userId).getDocuments()
+            
+            favorites = query.documents.compactMap { doc in
+                try? doc.data(as: Favorite.self)
+            }
+        } catch {
+            print("Error when fetching favorites: \(error)")
+            throw error
+        }
+        
+    }
+    
+    func removeFavorite(storeId: String, productId: String) async throws -> String {
+        do {
+            guard let userId = currentUserId else { return "" }
+            
+            let documentId = favoriteKey(userId: userId, storeId: storeId, productId: productId)
+            
+            try await db.collection("favorites").document(documentId).delete()
+            
+            return documentId
+            
+        } catch {
+            print("Error when deleting favorite: \(error)")
+            throw error
+        }
+        
     }
 }

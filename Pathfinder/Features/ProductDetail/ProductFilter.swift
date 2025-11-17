@@ -12,6 +12,9 @@ struct ProductFilter: View {
     @EnvironmentObject var cameraPosition: CameraPosition
     @EnvironmentObject var mapService: MapService
     @State private var distanceFilter: [String: Double] = [:]
+    //Favorite
+    @State private var favoriteKeys: Set<String> = []
+    @StateObject private var favoriteService = FavoriteService()
     
     var storeMap: [String: Store] {
         Dictionary(uniqueKeysWithValues: storeStocks.map { ($0.storeId, $0) })
@@ -75,10 +78,11 @@ struct ProductFilter: View {
                 }
             }
         }
+        
         if !productStocks.isEmpty{
             ScrollView(.vertical, showsIndicators: false) {
                 
-                ForEach(filteredArray, id: \.id) { data in
+                ForEach(filteredArray, id: \.storeId) { data in
                     let storeId = data.storeId
                     let storeStockPrice = String(format: "%.2f", data.productPrice)
                     let stockCount = data.stockQuantity
@@ -88,7 +92,8 @@ struct ProductFilter: View {
                     let storeName = storeData?.storeName ?? "Store"
                     let storeLatitude = storeData?.storeLatitude ?? 0.0
                     let storeLongitude = storeData?.storeLongitude ?? 0.0
-                    
+                    let favoriteKey = "\(favoriteService.currentUserId ?? "")#\(storeId)#\(data.productId)"
+
                     Button(action: {
                         withAnimation(.easeInOut){
                             expandedItem = (expandedItem == storeId) ? nil : storeId
@@ -103,52 +108,100 @@ struct ProductFilter: View {
                     
                     if expandedItem == storeId {
                         ZStack(alignment: .topTrailing) {
-                            VStack() {
+                            VStack(alignment: .leading, spacing: 8) {
                                 Text("""
-                                        Price: \(storeStockPrice) ₺
-                                        Stock: \(stockCount)
-                                        Estimated Distance: \(storeDistance, specifier: "%.0f") m
-                                        """)
+                                    Price: \(storeStockPrice) ₺
+                                    Stock: \(stockCount)
+                                    Estimated Distance: \(storeDistance, specifier: "%.0f") m
+                                    """)
                                 .multilineTextAlignment(.leading)
-                                .transition(.opacity.combined(with: .move(edge: .top)))
-                                .multilineTextAlignment(.leading)
+                                .foregroundColor(.white)
                                 
-                                Button(action: {
-                                    Task {
-                                        if let region = await mapService.getDirections(to: CLLocationCoordinate2D(latitude: storeLatitude, longitude: storeLongitude)
-                                        ) {
-                                            withAnimation(.easeInOut(duration: 0.4)) {
-                                                cameraPosition.cameraPosition = .region(region)
+                                Spacer()
+                                
+                                HStack {
+                                    Button(action: {
+                                        Task {
+                                            if let region = await mapService.getDirections(
+                                                to: CLLocationCoordinate2D(latitude: storeLatitude, longitude: storeLongitude)
+                                            ) {
+                                                withAnimation(.easeInOut(duration: 0.4)) {
+                                                    cameraPosition.cameraPosition = .region(region)
+                                                }
                                             }
                                         }
+                                    }) {
+                                        Image(systemName: "location.fill")
+                                            .font(.system(size: 18))
+                                            .foregroundColor(.white)
+                                            .frame(height: 40)
+                                            .frame(maxWidth: .infinity)
+                                            .background(Color.green)
+                                            .cornerRadius(8)
                                     }
-                                }) {
-                                    Image(systemName: "location.fill")
-                                        .frame(width: 100, height: 30)
-                                        .padding(5)
-                                        .background(.green)
-                                        .cornerRadius(8)
+                                    
+                                    Button(action: {
+                                        Task {
+                                            if favoriteKeys.contains(favoriteKey) {
+                                                do {
+                                                    let removedKey = try await favoriteService.removeFavorite(storeId: storeId, productId: data.productId)
+                                                    favoriteKeys.remove(removedKey)
+                                                } catch {
+                                                    print("Error when removing favorite", error)
+                                                }
+                                            } else {
+                                                do {
+                                                    let addedKey = try await favoriteService.addFavorite(storeId: storeId, productId: data.productId)
+                                                    favoriteKeys.insert(addedKey)
+                                                } catch {
+                                                    print("error adding favorite", error)
+                                                }
+                                            }
+                                        }
+                                        
+                                    }) {
+                                        Image(systemName: favoriteKeys.contains(favoriteKey) ? "heart.fill" : "heart")
+                                            .font(.system(size: 18))
+                                            .foregroundColor(favoriteKeys.contains(storeId) ? .red : .white)
+                                            .frame(height: 40)
+                                            .padding(.horizontal)
+                                            .background(Color.white.opacity(0.1))
+                                            .cornerRadius(6)
+                                    }
                                 }
+                                .padding(.bottom, 6)
                             }
-                            .frame(width: commonWidth)
                             .padding()
+                            .frame(width: commonWidth)
                             .background(Color.black.opacity(0.5))
                             .cornerRadius(8)
-                            .padding([.leading, .trailing, .bottom], 10)
-                            .padding(.top, 1)
+                            .padding(.horizontal, 10)
+                            .padding(.bottom, 10)
                             
-                            HStack {
-                                Image(systemName: "star")
+                            HStack(spacing: 4) {
+                                Image(systemName: "star.fill")
                                     .font(.system(size: 15))
                                     .foregroundColor(.yellow)
-                                    .padding(-6)
                                 Text("\(storeRating)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.white)
                             }
-                            .padding(20)
+                            .padding(.top, 16)
+                            .padding(.trailing, 24)
                         }
+                        .frame(width: commonWidth)
+                        .cornerRadius(8)
                     }
+                    
                 }
             }
+            .onAppear {
+                Task {
+                    try? await favoriteService.fetchUserFavorites()
+                    favoriteKeys = Set(favoriteService.favorites.map {"\( $0.storeId)#\($0.productId)"})
+                }
+            }
+            
         } else {
             Text("No products available")
                 .frame(maxWidth: commonWidth, alignment: .init(horizontal: .center, vertical: .center))
@@ -156,6 +209,7 @@ struct ProductFilter: View {
                 .cornerRadius(8)
                 .foregroundColor(.red)
         }
+
         
     }
 }
