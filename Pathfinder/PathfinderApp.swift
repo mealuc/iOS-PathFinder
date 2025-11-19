@@ -16,12 +16,14 @@ class AppState : ObservableObject {
 @main
 struct PathfinderApp: App {
     @StateObject var appState = AppState()
+    @StateObject var favoriteService = FavoriteService()
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(appState)
+                .environmentObject(favoriteService)
         }
     }
 }

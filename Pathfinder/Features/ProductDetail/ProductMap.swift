@@ -46,17 +46,6 @@ struct MapView: View {
         }
         .onAppear() {
             locationAuth.checkLocationAuthorizationStatus()
-            /*
-             // İlk mağazaya zoom yapmak için
-             if let first = storeStocks.first {
-             cameraPosition = .region(
-             MKCoordinateRegion(
-             center: CLLocationCoordinate2D(latitude: first.latitude, longitude: first.longitude),
-             span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-             )
-             )
-             }
-             */
         }
         .mapControls {
             MapUserLocationButton()

@@ -14,7 +14,7 @@ struct ProductFilter: View {
     @State private var distanceFilter: [String: Double] = [:]
     //Favorite
     @State private var favoriteKeys: Set<String> = []
-    @StateObject private var favoriteService = FavoriteService()
+    @EnvironmentObject var favoriteService: FavoriteService
     
     var storeMap: [String: Store] {
         Dictionary(uniqueKeysWithValues: storeStocks.map { ($0.storeId, $0) })
@@ -93,7 +93,7 @@ struct ProductFilter: View {
                     let storeLatitude = storeData?.storeLatitude ?? 0.0
                     let storeLongitude = storeData?.storeLongitude ?? 0.0
                     let favoriteKey = "\(favoriteService.currentUserId ?? "")#\(storeId)#\(data.productId)"
-
+                    
                     Button(action: {
                         withAnimation(.easeInOut){
                             expandedItem = (expandedItem == storeId) ? nil : storeId
@@ -104,7 +104,7 @@ struct ProductFilter: View {
                     }
                     .background(.blue)
                     .cornerRadius(8)
-                    .foregroundStyle(expandedItem == storeId ? .yellow : .white)
+                    .foregroundStyle(expandedItem == storeId ? .black : .white)
                     
                     if expandedItem == storeId {
                         ZStack(alignment: .topTrailing) {
@@ -162,7 +162,7 @@ struct ProductFilter: View {
                                     }) {
                                         Image(systemName: favoriteKeys.contains(favoriteKey) ? "heart.fill" : "heart")
                                             .font(.system(size: 18))
-                                            .foregroundColor(favoriteKeys.contains(storeId) ? .red : .white)
+                                            .foregroundColor(favoriteKeys.contains(favoriteKey) ? .red : .white)
                                             .frame(height: 40)
                                             .padding(.horizontal)
                                             .background(Color.white.opacity(0.1))
@@ -197,8 +197,7 @@ struct ProductFilter: View {
             }
             .onAppear {
                 Task {
-                    try? await favoriteService.fetchUserFavorites()
-                    favoriteKeys = Set(favoriteService.favorites.map {"\( $0.storeId)#\($0.productId)"})
+                    favoriteKeys = Set(favoriteService.userFavorites.map {"\(favoriteService.currentUserId ?? "")#\($0.storeId)#\($0.productId)"})
                 }
             }
             
@@ -209,11 +208,11 @@ struct ProductFilter: View {
                 .cornerRadius(8)
                 .foregroundColor(.red)
         }
-
-        
     }
 }
 
+
 #Preview {
     ProductDetailView(productName: "Test Ürün", productId: "5CCB3AE8-4791-4B83-9498-82AE71BECACE")
+        .environmentObject(FavoriteService())
 }

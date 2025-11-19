@@ -13,7 +13,8 @@ struct ProductDetailView: View {
     @State private var errorMessage: String?
     @StateObject private var cameraPosition = CameraPosition()
     @StateObject private var mapService = MapService()
-    
+    @EnvironmentObject var favoriteService: FavoriteService
+
     private let stockFetcher = GetProductStock()
     private let storeFetcher = GetStockedStores()
     
@@ -47,7 +48,7 @@ struct ProductDetailView: View {
             }
             .foregroundStyle(.white)
             
-            if isFilterOpen { 
+            if isFilterOpen {
                 FilterMenuModal(
                     isFilterOpen: $isFilterOpen,
                     selectedFilter: $selectedFilter,

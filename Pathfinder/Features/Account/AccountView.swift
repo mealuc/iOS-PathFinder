@@ -8,12 +8,13 @@
 import SwiftUI
 
 struct AccountView: View {
-    @EnvironmentObject var appState : AppState
+    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var favoriteService: FavoriteService
     @StateObject var accountModel = AccountModel()
     @StateObject var userSession = User()
     
     var body: some View {
-        VStack{
+        VStack(spacing: 0){
             HStack{
                 Circle()
                     .frame(width: 60, height: 60)
@@ -27,7 +28,58 @@ struct AccountView: View {
                 .foregroundStyle(.blue)
             }
             .padding()
+            
             Divider()
+            VStack{
+                HStack(spacing: 0) {
+                    //Bug var sadece textler buton görevi görüyor, tüm mavi alanın basılabilir olması gerekli
+                    Button(action: {
+                        print("My Favorites", favoriteService.userFavorites)
+                    }){
+                        Text ("My Favorites")
+                            .frame(height: 50)
+                            .foregroundStyle(Color(.white))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .background(.blue)
+                    .buttonStyle(PressedButonStyle())
+                    
+                    Divider()
+                    
+                    Button(action: {
+                        print("History")
+                    }){
+                        Text ("History")
+                            .frame(height: 50)
+                            .foregroundStyle(Color(.white))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .background(.blue)
+                    .buttonStyle(PressedButonStyle())
+                }
+            }
+            .frame(maxHeight: 50)
+            .padding(.bottom)
+            
+            ScrollView(.vertical) {
+                ForEach(favoriteService.userFavorites, id: \.id){ data in
+                    let storeId = data.storeId
+                    let productId = data.productId
+                    
+                    VStack{
+                        Text(storeId)
+                            .frame(height: 50, alignment: .center)
+                            .frame(maxWidth: .infinity)
+
+                        Text(productId)
+                            .frame(height: 50)
+                    }
+                    .background(.blue)
+                    .frame(maxWidth: .infinity)
+                    .cornerRadius(8)
+                }
+            }
+            
             Spacer()
             
             if let errorMessage = accountModel.errorMessage {
@@ -37,7 +89,7 @@ struct AccountView: View {
                     .frame(width: 300)
                     .padding(.bottom)
             }
-
+            
             Button(action: {
                 AccountService.logout(accountModel: accountModel) { result in
                     if result {
@@ -60,4 +112,5 @@ struct AccountView: View {
 #Preview {
     AccountView()
         .environmentObject(AppState())
+        .environmentObject(FavoriteService())
 }

@@ -48,14 +48,35 @@ class AccountService {
 
 @MainActor
 class FavoriteService: ObservableObject {
-    @Published var favorites: [Favorite] = []
+    @Published var userFavorites: [Favorite] = []
     
     var currentUserId: String? {
         Auth.auth().currentUser?.uid
     }
     
+    private var favoriteListener: ListenerRegistration? = nil
+    
     func favoriteKey (userId: String, storeId: String, productId: String) -> String {
         return "\(userId)#\(storeId)#\(productId)"
+    }
+    
+    init() {
+        startListeningFavorites()
+    }
+    
+    func startListeningFavorites() {
+        guard let userId = currentUserId else { return }
+        
+        favoriteListener?.remove()
+        
+        favoriteListener = db.collection("favorites").whereField("userId", isEqualTo: userId).addSnapshotListener { [weak self] querySnapshot, error in
+            guard let self = self else { return }
+            if let snapshot = querySnapshot {
+                self.userFavorites = snapshot.documents.compactMap{
+                    try? $0.data(as: Favorite.self)
+                }
+            }
+        }
     }
     
     func addFavorite (storeId: String, productId: String) async throws -> String {
@@ -79,13 +100,13 @@ class FavoriteService: ObservableObject {
     func fetchUserFavorites() async throws {
         do {
             guard let userId = currentUserId else {
-                favorites = []
+                userFavorites = []
                 return
             }
             
             let query = try await db.collection("favorites").whereField("userId", isEqualTo: userId).getDocuments()
             
-            favorites = query.documents.compactMap { doc in
+            userFavorites = query.documents.compactMap { doc in
                 try? doc.data(as: Favorite.self)
             }
         } catch {
