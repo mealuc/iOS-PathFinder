@@ -11,6 +11,7 @@ struct FilterMenuModal: View {
     
     @Binding var isFilterOpen: Bool
     @Binding var selectedFilter: filterType
+    
     var commonWidth: CGFloat
     
     var body: some View {

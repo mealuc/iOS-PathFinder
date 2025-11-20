@@ -75,5 +75,7 @@ struct ProductDetailView: View {
 
 #Preview {
     ProductDetailView(productName: "Test Ürün", productId: "5CCB3AE8-4791-4B83-9498-82AE71BECACE")
+        .environmentObject(FavoriteService())
+
 }
 
