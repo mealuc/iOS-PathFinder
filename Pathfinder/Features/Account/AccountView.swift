@@ -18,6 +18,7 @@ struct AccountView: View {
     
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var favoriteService: FavoriteService
+    @StateObject var historyService = HistoryService()
     @StateObject var accountModel = AccountModel()
     @StateObject var userSession = User()
     @State var selectedAction: SelectiveAction = .myFavorites
@@ -50,7 +51,6 @@ struct AccountView: View {
                         Button(action: {
                             withAnimation(.spring()) {
                                 selectedAction = .myFavorites
-                                print("datalar", favoriteService.userFavorites)
                             }
                         }){
                             Text ("My Favorites")
@@ -79,6 +79,7 @@ struct AccountView: View {
                     VStack(spacing: 0) {
                         Button(action: {
                             withAnimation(.spring()) {
+                                historyService.getHistory()
                                 selectedAction = .myHistory
                             }
                         }){
@@ -112,27 +113,55 @@ struct AccountView: View {
             case .myFavorites:
                 ScrollView(.vertical) {
                     ForEach(favoriteService.userFavorites, id: \.id){ data in
-                        let storeId = data.storeId
-                        let productId = data.productId
+                        let storeName = data.storeName
+                        let productName = data.productName
+                        let stockCount = data.stockQuantity
+                        let stockPrice = String(format: "%.1f", data.productPrice)
                         
-                        VStack{
-                            Text(storeId)
-                                .frame(height: 50, alignment: .center)
+                        VStack(alignment: .leading){
+                            Text(productName)
+                                .frame(height: 40)
                                 .frame(maxWidth: .infinity)
                             
-                            Text(productId)
-                                .frame(height: 50)
+                            Text("""
+                                Location: \(storeName)
+                                Stock: \(stockCount)
+                                Price: \(stockPrice) ₺
+                                """)
+                            .frame(alignment: .leading)
+                            .padding(.horizontal)
+                            .padding(.bottom)
                         }
-                        .background(.blue)
                         .frame(maxWidth: .infinity)
+                        .background(.blue)
                         .cornerRadius(8)
                     }
                 }
                 
             case .myHistory:
-                Text("History coming soon...")
-                    .padding()
-                
+                ScrollView(.vertical) {
+                    ForEach(historyService.history){ item in
+                        let stockPrice = String(format: "%.1f", item.stockPrice)
+                        
+                        VStack(alignment: .leading){
+                            Text(item.productName)
+                                .frame(height: 40)
+                                .frame(maxWidth: .infinity)
+                            
+                            Text("""
+                                Location: \(item.storeName)
+                                Price: \(stockPrice) ₺
+                                Viewed: \(item.viewedAt)
+                                """)
+                            .frame(alignment: .leading)
+                            .padding(.horizontal)
+                            .padding(.bottom)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .background(.blue)
+                        .cornerRadius(8)
+                    }
+                }
             }
             
             Spacer()
@@ -161,8 +190,8 @@ struct AccountView: View {
         }
         .onAppear(){
             AccountService.getUserData(user: userSession, accountModel: accountModel)
+            historyService.getHistory()
         }
-        
     }
 }
 

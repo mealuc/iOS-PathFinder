@@ -9,17 +9,21 @@ struct ProductFilter: View {
     @State private var expandedItem: String? = nil
     @Binding var isFilterOpen: Bool
     @Binding var selectedFilter: filterType
+    
+    let productName: String
+    //Map
     @EnvironmentObject var cameraPosition: CameraPosition
     @EnvironmentObject var mapService: MapService
     @State private var distanceFilter: [String: Double] = [:]
     //Favorite
     @State private var favoriteKeys: Set<String> = []
     @EnvironmentObject var favoriteService: FavoriteService
+    //History
+    @EnvironmentObject var historyService: HistoryService
     
     var storeMap: [String: Store] {
         Dictionary(uniqueKeysWithValues: storeStocks.map { ($0.storeId, $0) })
     }
-    
     
     var filteredArray: [ProductStock] {
         switch selectedFilter {
@@ -82,7 +86,7 @@ struct ProductFilter: View {
         if !productStocks.isEmpty{
             ScrollView(.vertical, showsIndicators: false) {
                 
-                ForEach(filteredArray, id: \.storeId) { data in
+                ForEach(filteredArray, id: \.id) { data in
                     let storeId = data.storeId
                     let storeStockPrice = String(format: "%.2f", data.productPrice)
                     let stockCount = data.stockQuantity
@@ -129,6 +133,14 @@ struct ProductFilter: View {
                                                     cameraPosition.cameraPosition = .region(region)
                                                 }
                                             }
+                                            
+                                            historyService.addToHistory(
+                                                productId: data.productId,
+                                                storeId: storeId,
+                                                productName: productName,
+                                                storeName: storeName,
+                                                stockPrice: data.productPrice
+                                            )
                                         }
                                     }) {
                                         Image(systemName: "location.fill")
@@ -151,7 +163,15 @@ struct ProductFilter: View {
                                                 }
                                             } else {
                                                 do {
-                                                    let addedKey = try await favoriteService.addFavorite(storeId: storeId, productId: data.productId)
+                                                    let addedKey = try await favoriteService.addFavorite(
+                                                        storeId: storeId,
+                                                        productId: data.productId,
+                                                        stockQuantity: stockCount,
+                                                        productPrice: data.productPrice,
+                                                        storeRating: storeData?.storeRating ?? 0.0,
+                                                        storeName: storeName,
+                                                        productName: productName
+                                                    )
                                                     favoriteKeys.insert(addedKey)
                                                 } catch {
                                                     print("error adding favorite", error)
@@ -215,4 +235,5 @@ struct ProductFilter: View {
 #Preview {
     ProductDetailView(productName: "Test Ürün", productId: "5CCB3AE8-4791-4B83-9498-82AE71BECACE")
         .environmentObject(FavoriteService())
+        .environmentObject(HistoryService())
 }

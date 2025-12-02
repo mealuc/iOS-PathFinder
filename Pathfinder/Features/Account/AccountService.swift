@@ -55,13 +55,22 @@ class FavoriteService: ObservableObject {
     }
     
     private var favoriteListener: ListenerRegistration? = nil
+    private var authStateListener: AuthStateDidChangeListenerHandle? = nil
     
     func favoriteKey (userId: String, storeId: String, productId: String) -> String {
         return "\(userId)#\(storeId)#\(productId)"
     }
     
     init() {
-        startListeningFavorites()
+        authStateListener = Auth.auth().addStateDidChangeListener{ [weak self] _, user in
+            guard let self = self else { return }
+            
+            if user != nil {
+                self.startListeningFavorites()
+            } else {
+                self.userFavorites = []
+            }
+        }
     }
     
     func startListeningFavorites() {
@@ -79,13 +88,23 @@ class FavoriteService: ObservableObject {
         }
     }
     
-    func addFavorite (storeId: String, productId: String) async throws -> String {
+    func addFavorite (storeId: String, productId: String, stockQuantity: Int, productPrice: Double, storeRating: Double, storeName: String, productName: String) async throws -> String {
         do {
             guard let userId = currentUserId else { return "" }
             
             let documentId = favoriteKey(userId: userId, storeId: storeId, productId: productId)
             
-            let favoriteData = Favorite(id: documentId, userId: userId, storeId: storeId, productId: productId)
+            let favoriteData = Favorite(
+                id: documentId,
+                userId: userId,
+                storeId: storeId,
+                productId: productId,
+                stockQuantity: stockQuantity,
+                productPrice: productPrice,
+                storeRating: storeRating,
+                storeName: storeName,
+                productName: productName
+            )
             
             try db.collection("favorites").document(documentId).setData(from: favoriteData)
             
@@ -131,5 +150,49 @@ class FavoriteService: ObservableObject {
             throw error
         }
         
+    }
+}
+
+class HistoryService: ObservableObject {
+    @Published var history: [ViewedItem] = []
+    
+    private let key = "viewed_history"
+    
+    init () {
+        getHistory()
+    }
+    
+    func getHistory() {
+        if let data = UserDefaults.standard.data(forKey: key),
+           let decoded = try? JSONDecoder().decode([ViewedItem].self, from: data) {
+            self.history = decoded
+        }
+    }
+    
+    func addToHistory(productId: String, storeId: String, productName: String, storeName: String, stockPrice: Double) {
+        
+        let historyItem = ViewedItem(
+            id: UUID().uuidString,
+            productId: productId,
+            storeId: storeId,
+            productName: productName,
+            storeName: storeName,
+            stockPrice: stockPrice,
+            viewedAt: Date()
+        )
+        
+        history.insert(historyItem, at: 0)
+        
+        if history.count > 20 {
+            history.removeLast()
+        }
+        
+        saveHistory()
+    }
+    
+    func saveHistory() {
+        if let encoded = try? JSONEncoder().encode(history) {
+            UserDefaults.standard.set(encoded, forKey: key)
+        }
     }
 }

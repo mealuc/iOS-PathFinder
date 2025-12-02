@@ -13,6 +13,7 @@ struct ProductDetailView: View {
     @State private var errorMessage: String?
     @StateObject private var cameraPosition = CameraPosition()
     @StateObject private var mapService = MapService()
+    @StateObject private var historyService = HistoryService()
     @EnvironmentObject var favoriteService: FavoriteService
 
     private let stockFetcher = GetProductStock()
@@ -38,7 +39,8 @@ struct ProductDetailView: View {
                     productStocks: productStocks,
                     storeStocks: storeStocks,
                     isFilterOpen: $isFilterOpen,
-                    selectedFilter: $selectedFilter
+                    selectedFilter: $selectedFilter,
+                    productName: productName
                 )
             }
             .onAppear() {
@@ -58,6 +60,7 @@ struct ProductDetailView: View {
         }
         .environmentObject(cameraPosition)
         .environmentObject(mapService)
+        .environmentObject(historyService)
     }
     
     func loadStocks() async {
@@ -76,6 +79,6 @@ struct ProductDetailView: View {
 #Preview {
     ProductDetailView(productName: "Test Ürün", productId: "5CCB3AE8-4791-4B83-9498-82AE71BECACE")
         .environmentObject(FavoriteService())
-
+        .environmentObject(HistoryService())
 }
 
