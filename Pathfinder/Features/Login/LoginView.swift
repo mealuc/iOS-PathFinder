@@ -8,6 +8,7 @@ struct LoginView: View {
     @EnvironmentObject var appState : AppState
     @StateObject var loginModel = LoginModel()
     @State private var showRegisterView : Bool = false
+    @State var authService = AuthService()
     
     var body: some View {
         NavigationView {
@@ -24,7 +25,7 @@ struct LoginView: View {
                     .modifier(FieldModifier())
                 
                 Button(action: {
-                    AuthService.userLoginAuthanticate(email: loginModel.email, password: loginModel.password, loginModel: loginModel) { result in
+                    authService.userLoginAuthanticate(email: loginModel.email, password: loginModel.password, loginModel: loginModel) { result in
                         if result {
                             appState.isLoggedIn = true
                         }
@@ -47,20 +48,21 @@ struct LoginView: View {
                 }
                 
                 Text("or")
-                HStack {
-                    Circle()
-                        .frame(width: 50, height: 40)
-                        .foregroundColor(Color.blue)
-                    
-                    Circle()
-                        .frame(width: 50, height: 40)
-                        .foregroundColor(Color.blue)
-                    
-                    Circle()
-                        .frame(width: 50, height: 40)
-                        .foregroundColor(Color.blue)
+                
+                Button {
+                    authService.signInWithGoogle() { result in
+                        if result {
+                            appState.isLoggedIn = true
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "g.circle.fill")
+                            .foregroundColor(Color.blue)
+                    }
+                    .padding(.vertical, 4)
+                    .font(.system(size: 35))
                 }
-                .padding(.bottom)
                 
                 Divider()
                 
@@ -72,7 +74,7 @@ struct LoginView: View {
                         .foregroundColor(Color.blue)
                 }
                 .padding()
-                    
+                
             }
             .padding()
         }
