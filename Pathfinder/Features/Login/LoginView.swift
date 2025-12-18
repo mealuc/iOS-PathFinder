@@ -3,12 +3,12 @@
 //  Created by EmreAluc on 13.01.2025.
 
 import SwiftUI
+import AuthenticationServices
 
 struct LoginView: View {
     @EnvironmentObject var appState : AppState
     @StateObject var loginModel = LoginModel()
     @State private var showRegisterView : Bool = false
-    @State var authService = AuthService()
     
     var body: some View {
         NavigationView {
@@ -25,8 +25,8 @@ struct LoginView: View {
                     .modifier(FieldModifier())
                 
                 Button(action: {
-                    authService.userLoginAuthanticate(email: loginModel.email, password: loginModel.password, loginModel: loginModel) { result in
-                        if result {
+                    AuthService.shared.loginWithEmail(email: loginModel.email, password: loginModel.password) { result in
+                        if case .success = result {
                             appState.isLoggedIn = true
                         }
                     }
@@ -48,20 +48,38 @@ struct LoginView: View {
                 }
                 
                 Text("or")
-                
-                Button {
-                    authService.signInWithGoogle() { result in
-                        if result {
-                            appState.isLoggedIn = true
+                HStack(spacing: 32) {
+                    
+                    Button {
+                        let rootVC = UIApplication.shared.connectedScenes
+                            .compactMap { $0 as? UIWindowScene }
+                            .first?
+                            .windows
+                            .first?
+                            .rootViewController
+                        
+                        if let rootVC {
+                            AuthService.shared.signInWithGoogle(rootVC: rootVC) { success in
+                                if success {
+                                    appState.isLoggedIn = true
+                                }
+                            }
                         }
-                    }
-                } label: {
-                    HStack(spacing: 8) {
+                    } label: {
                         Image(systemName: "g.circle.fill")
                             .foregroundColor(Color.blue)
+                            .padding(.vertical, 4)
+                            .font(.system(size: 35))
                     }
-                    .padding(.vertical, 4)
-                    .font(.system(size: 35))
+                    
+                    SignInWithAppleButton(
+                        .signIn,
+                        onRequest: AuthService.shared.prepareAppleRequest,
+                        onCompletion: AuthService.shared.handleAppleLogin
+                    )
+                    .frame(maxWidth: 150)
+                    .frame(height: 40)
+                    .cornerRadius(10)
                 }
                 
                 Divider()

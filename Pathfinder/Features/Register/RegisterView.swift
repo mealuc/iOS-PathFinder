@@ -96,5 +96,3 @@ struct RegisterView: View {
 #Preview {
     RegisterView()
 }
-// We musnt go back with NavigationLink
-// We can go redirect account page after successful register process
