@@ -17,6 +17,8 @@ class AppState : ObservableObject {
 struct PathfinderApp: App {
     @StateObject var appState = AppState()
     @StateObject var favoriteService = FavoriteService()
+    @StateObject var historyService = HistoryService()
+
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
 
     var body: some Scene {
@@ -24,6 +26,7 @@ struct PathfinderApp: App {
             ContentView()
                 .environmentObject(appState)
                 .environmentObject(favoriteService)
+                .environmentObject(historyService)
         }
     }
 }

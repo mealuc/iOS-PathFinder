@@ -4,10 +4,12 @@
 
 import SwiftUI
 import AuthenticationServices
+import FirebaseAuth
 
 struct LoginView: View {
     @EnvironmentObject var appState : AppState
     @StateObject var loginModel = LoginModel()
+    @EnvironmentObject var historyService: HistoryService
     @State private var showRegisterView : Bool = false
     
     var body: some View {
@@ -25,9 +27,20 @@ struct LoginView: View {
                     .modifier(FieldModifier())
                 
                 Button(action: {
-                    AuthService.shared.loginWithEmail(email: loginModel.email, password: loginModel.password) { result in
-                        if case .success = result {
+                    AuthService.shared.loginWithEmail(
+                        email: loginModel.email,
+                        password: loginModel.password
+                    ) { result in
+                        switch result {
+                        case .success:
+                            loginModel.errorMessage = nil
+                            if let uid = Auth.auth().currentUser?.uid {
+                                historyService.getHistory(for: uid)
+                            }
                             appState.isLoggedIn = true
+                            
+                        case .failure(let error):
+                            loginModel.errorMessage = error.localizedDescription
                         }
                     }
                 }) {

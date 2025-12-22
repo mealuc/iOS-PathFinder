@@ -13,10 +13,10 @@ import SwiftUI
 class AccountService {
     @EnvironmentObject var accountModel: AccountModel
     //User Logout area
-    static func logout(accountModel: AccountModel, completion: @escaping (Bool) -> Void) {
+    static func logout(accountModel: AccountModel, historyService: HistoryService, completion: @escaping (Bool) -> Void) {
         do {
             try Auth.auth().signOut()
-            print("User signed out succesfully!")
+            historyService.clearHistory()
             completion(true)
             
         } catch let signOutError as NSError {
@@ -158,18 +158,22 @@ class HistoryService: ObservableObject {
     
     private let key = "viewed_history"
     
-    init () {
-        getHistory()
+    func historyKey (for uid: String) -> String {
+        return "viewed_history_\(uid)"
     }
     
-    func getHistory() {
+    func getHistory(for uid: String) {
+        let key = historyKey(for: uid)
+        
         if let data = UserDefaults.standard.data(forKey: key),
            let decoded = try? JSONDecoder().decode([ViewedItem].self, from: data) {
             self.history = decoded
+        } else {
+            self.history = []
         }
     }
     
-    func addToHistory(productId: String, storeId: String, productName: String, storeName: String, stockPrice: Double) {
+    func addToHistory(uid: String, productId: String, storeId: String, productName: String, storeName: String, stockPrice: Double) {
         
         let historyItem = ViewedItem(
             id: UUID().uuidString,
@@ -187,12 +191,18 @@ class HistoryService: ObservableObject {
             history.removeLast()
         }
         
-        saveHistory()
+        saveHistory(for: uid)
     }
     
-    func saveHistory() {
+    func saveHistory(for uid: String) {
+        let key = historyKey(for: uid)
+        
         if let encoded = try? JSONEncoder().encode(history) {
             UserDefaults.standard.set(encoded, forKey: key)
         }
+    }
+    
+    func clearHistory(){
+        history = []
     }
 }

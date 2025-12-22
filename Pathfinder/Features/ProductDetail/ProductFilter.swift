@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseAuth
 import MapKit
 
 struct ProductFilter: View {
@@ -126,6 +127,8 @@ struct ProductFilter: View {
                                 HStack {
                                     Button(action: {
                                         Task {
+                                            guard let uid = Auth.auth().currentUser?.uid else { return }
+                                            
                                             if let region = await mapService.getDirections(
                                                 to: CLLocationCoordinate2D(latitude: storeLatitude, longitude: storeLongitude)
                                             ) {
@@ -135,6 +138,7 @@ struct ProductFilter: View {
                                             }
                                             
                                             historyService.addToHistory(
+                                                uid: uid,
                                                 productId: data.productId,
                                                 storeId: storeId,
                                                 productName: productName,

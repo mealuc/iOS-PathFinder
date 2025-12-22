@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 enum SelectiveAction: String, CaseIterable {
     case myFavorites
@@ -18,7 +19,7 @@ struct AccountView: View {
     
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var favoriteService: FavoriteService
-    @StateObject var historyService = HistoryService()
+    @EnvironmentObject var historyService: HistoryService
     @StateObject var accountModel = AccountModel()
     @StateObject var userSession = User()
     @State var selectedAction: SelectiveAction = .myFavorites
@@ -79,7 +80,9 @@ struct AccountView: View {
                     VStack(spacing: 0) {
                         Button(action: {
                             withAnimation(.spring()) {
-                                historyService.getHistory()
+                                if let uid = Auth.auth().currentUser?.uid {
+                                    historyService.getHistory(for: uid)
+                                }
                                 selectedAction = .myHistory
                             }
                         }){
@@ -175,7 +178,7 @@ struct AccountView: View {
             }
             
             Button(action: {
-                AccountService.logout(accountModel: accountModel) { result in
+                AccountService.logout(accountModel: accountModel, historyService: historyService) { result in
                     if result {
                         appState.isLoggedIn = false
                     }
@@ -190,7 +193,6 @@ struct AccountView: View {
         }
         .onAppear(){
             AccountService.getUserData(user: userSession, accountModel: accountModel)
-            historyService.getHistory()
         }
     }
 }

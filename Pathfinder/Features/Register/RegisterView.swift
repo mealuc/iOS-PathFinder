@@ -27,9 +27,6 @@ struct RegisterView: View {
                 TextField("Surname", text: $user.surname)
                     .modifier(FieldModifier())
                 
-                TextField("Username", text: $user.username)
-                    .modifier(FieldModifier())
-                
                 TextField("Email", text: $user.email)
                     .modifier(FieldModifier())
                 
