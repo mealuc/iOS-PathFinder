@@ -185,6 +185,8 @@ class HistoryService: ObservableObject {
             viewedAt: Date()
         )
         
+        getHistory(for: uid)
+
         history.insert(historyItem, at: 0)
         
         if history.count > 20 {

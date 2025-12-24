@@ -80,9 +80,6 @@ struct AccountView: View {
                     VStack(spacing: 0) {
                         Button(action: {
                             withAnimation(.spring()) {
-                                if let uid = Auth.auth().currentUser?.uid {
-                                    historyService.getHistory(for: uid)
-                                }
                                 selectedAction = .myHistory
                             }
                         }){
@@ -193,6 +190,9 @@ struct AccountView: View {
         }
         .onAppear(){
             AccountService.getUserData(user: userSession, accountModel: accountModel)
+            if let uid = Auth.auth().currentUser?.uid {
+                historyService.getHistory(for: uid)
+            }
         }
     }
 }
