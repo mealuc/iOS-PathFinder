@@ -67,6 +67,17 @@ struct SearchView: View {
                             .transition(.opacity.combined(with: .blurReplace))
                         }
                     }
+                    if productService.products.isEmpty {
+                        Text("No Products")
+                            .padding()
+                            .fixedSize()
+                            .cornerRadius(10)
+                    }
+                    if productService.hasMoreProducts {
+                        Button("Load More Products"){
+                            productService.fetchMoreProducts()
+                        }
+                    }
                 }
                 .animation(.linear(duration: 0.4), value: searchText)
             }

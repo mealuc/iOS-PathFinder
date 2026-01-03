@@ -61,14 +61,19 @@ class AddStores: BaseFirestoreService {
 
 class ProductService: BaseFirestoreService, ObservableObject {
     @Published var products: [Product] = []
+    @Published var hasMoreProducts: Bool = true
+    private var lastDocument: DocumentSnapshot?
+    private var pageLimit = 3
     
     func fetchProducts() {
-        db.collection("products").getDocuments { snapshot, error in
+        db.collection("products").order(by: "productName").limit(to: pageLimit).getDocuments { snapshot, error in
             if let error = error {
                 print("Error fetching products: \(error.localizedDescription)")
                 return
             }
             guard let documents = snapshot?.documents else { return }
+            self.lastDocument = documents.last
+            
             self.products = documents.compactMap { document in
                 do {
                     return try document.data(as: Product.self)
@@ -77,7 +82,39 @@ class ProductService: BaseFirestoreService, ObservableObject {
                     return nil
                 }
             }
+            self.hasMoreProducts = self.products.count == self.pageLimit
         }
+    }
+    
+    func fetchMoreProducts() {
+        guard let lastDocument else { return }
+        
+        db.collection("products").order(by: "productName")
+            .start(afterDocument: lastDocument)
+            .limit(to: pageLimit)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching more products: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let documents = snapshot?.documents else { return }
+                self.lastDocument = documents.last
+                
+                let newProducts = documents.compactMap { document in
+                    do {
+                        return try document.data(as: Product.self)
+                    } catch {
+                        print("Decoding error for document \(document.documentID): \(error)")
+                        return nil
+                    }
+                }
+                self.products.append(contentsOf: newProducts)
+                
+                if newProducts.count < self.pageLimit {
+                    self.hasMoreProducts = false
+                }
+            }
     }
 }
 
@@ -109,7 +146,7 @@ class AddProductStock: BaseFirestoreService {
     
     var allProducts = ProductService()
     var allStores = StoreService()
-
+    
     
     func prepareForAddingStock() {
         allProducts.fetchProducts()
@@ -125,7 +162,7 @@ class AddProductStock: BaseFirestoreService {
         
         guard let randomProduct = allProducts.products.randomElement(),
               let randomStore = allStores.stores.randomElement()
-              
+                
         else {
             print("Couldn't find a random product or store ID")
             return
