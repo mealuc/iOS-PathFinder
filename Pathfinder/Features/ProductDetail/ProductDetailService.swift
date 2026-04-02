@@ -41,41 +41,45 @@ class LocationManagerAuthorization: NSObject, CLLocationManagerDelegate {
     }
 }
 
-class GetProductStock: BaseFirestoreService {
+class StoreStockService: BaseFirestoreService {
     
-    func fetchStocks(for productId: String) async throws -> [ProductStock] {
-        let querySnapshot = try await db.collection("productStocks")
-            .whereField("productId", isEqualTo: productId)
-            .whereField("stockQuantity", isGreaterThan: 0)
-            .getDocuments()
-        let stocks = querySnapshot.documents.compactMap { document -> ProductStock? in
-            try? document.data(as: ProductStock.self)
-        }
-        return stocks
-    }
-}
-
-class GetStockedStores: BaseFirestoreService {
-    
-    func fetchStores(for stockResult: [ProductStock]) async throws -> [Store] {
+    func fetchStores(near coordinate: CLLocationCoordinate2D, radiusMeters: Double) async throws -> [Store] {
+        let earthRadius = 6_371_000.0
+        let latDelta = (radiusMeters / earthRadius) * (180 / .pi)
+        let longDelta = latDelta / cos(coordinate.latitude * .pi / 180)
         
-        let storeIds = Array(Set(stockResult.map { $0.storeId }))
-        var stores: [Store] = []
+        let minLat = coordinate.latitude - latDelta
+        let maxLat = coordinate.latitude + latDelta
+        let minLong = coordinate.longitude - longDelta
+        let maxLong = coordinate.longitude + longDelta
+        
+        let snapshot = try await db.collection("stores")
+            .whereField("storeLatitude", isGreaterThan: minLat)
+            .whereField("storeLatitude", isLessThan: maxLat)
+            .getDocuments()
+        
+        return snapshot.documents.compactMap { doc -> Store? in
+            guard let store = try? doc.data(as: Store.self) else { return nil }
+            guard store.storeLongitude >= minLong,
+                  store.storeLongitude <= maxLong else { return nil }
+            return store
+        }
+    }
+    
+    func fetchStocks(for productId: String, in storeIds: [String]) async throws -> [ProductStock] {
         let chunks = storeIds.chunked(into: 10)
+        var allStocks: [ProductStock] = []
         
         for chunk in chunks {
-            let querySnapshot = try await db.collection("stores")
+            let querySnapshot = try await db.collection("productStocks")
+                .whereField("productId", isEqualTo: productId)
                 .whereField("storeId", in: chunk)
+                .whereField("stockQuantity", isGreaterThan: 0)
                 .getDocuments()
-            
-            let fethchedStores = querySnapshot.documents.compactMap { document -> Store? in
-                try? document.data(as: Store.self)
-            }
-            
-            stores.append(contentsOf: fethchedStores)
+            let stocks = querySnapshot.documents.compactMap { try? $0.data(as: ProductStock.self) }
+            allStocks.append(contentsOf: stocks)
         }
-        
-        return stores
+        return allStocks
     }
 }
 

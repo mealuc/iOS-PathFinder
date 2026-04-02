@@ -19,6 +19,7 @@ struct SearchView: View {
     var body: some View {
         VStack {
             NavigationStack {
+                /*
                 Button("Add Dummy Store"){
                     addStoreService.addStore()
                 }
@@ -30,7 +31,7 @@ struct SearchView: View {
                 Button("Add Dummy Stock"){
                     addProductStockService.prepareForAddingStock()
                 }
-                
+                */
                 Spacer()
                 
                 TextField("Search", text: $searchText)
