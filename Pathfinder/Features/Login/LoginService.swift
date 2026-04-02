@@ -78,7 +78,7 @@ final class AuthService {
         request.requestedScopes = [.fullName, .email]
     }
 
-    func handleAppleLogin(_ result: Result<ASAuthorization, Error>) {
+    func handleAppleLogin(_ result: Result<ASAuthorization, Error>, completion: @escaping (Bool) -> Void) {
         switch result {
         case .success(let auth):
             guard
@@ -94,14 +94,27 @@ final class AuthService {
                 fullName: credential.fullName
             )
 
-            Auth.auth().signIn(with: firebaseCredential) { _, error in
+            Auth.auth().signIn(with: firebaseCredential) { authResult, error in
                 if error == nil {
                     self.saveUserToFirestore()
                 }
+                
+                if let user = authResult?.user, user.displayName == nil || user.displayName == "" {
+                    let name = [credential.fullName?.givenName, credential.fullName?.familyName]
+                        .compactMap { $0 }
+                        .joined(separator: " ")
+                    
+                    let changeRequest = user.createProfileChangeRequest()
+                    changeRequest.displayName = name
+                    changeRequest.commitChanges()
+                }
+                self.saveUserToFirestore()
+                completion(true)
             }
 
-        case .failure:
-            break
+        case .failure(let error):
+            print("Apple Auth Error: \(error.localizedDescription)")
+            completion(false)
         }
     }
 

@@ -88,7 +88,15 @@ struct LoginView: View {
                     SignInWithAppleButton(
                         .signIn,
                         onRequest: AuthService.shared.prepareAppleRequest,
-                        onCompletion: AuthService.shared.handleAppleLogin
+                        onCompletion: { result in
+                            AuthService.shared.handleAppleLogin(result) { success in
+                                if success {
+                                    appState.isLoggedIn = true
+                                    } else {
+                                    print("Login failed.")
+                                }
+                            }
+                        }
                     )
                     .frame(maxWidth: 150)
                     .frame(height: 40)
