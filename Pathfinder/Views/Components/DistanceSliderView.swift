@@ -9,10 +9,14 @@ import SwiftUI
 
 struct DistanceSliderView: View {
     @Binding var distanceValue: Double
+
+    
     var onAction: (Double) -> Void
     @State private var pendingFilteredDistance: DispatchWorkItem?
     @State private var isDragging = false
     @State private var valueX: Double = 0
+    @State private var isAnimating: Bool = false
+    @State private var loadingProgress: CGFloat = 0
     
     let range: ClosedRange<Double> = 500...10_000
     let step: Double = 500
@@ -34,54 +38,61 @@ struct DistanceSliderView: View {
                     .fill(Color.blue)
                     .frame(width: currentOffset, height: 6)
                 
-                Circle()
-                    .stroke(Color.black.opacity(0.3))
-                    .fill(Color.white)
-                    .frame(width: 24, height: 24)
-                    .shadow(radius: 6)
+                CircularLoader(loadingProgress: $loadingProgress, isAnimating: $isAnimating)
                     .offset(x: currentOffset - 12)
                     .gesture(dragGesture(width: width))
+                    /*
                     .overlay(alignment: .bottom){
                         if (isDragging){
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(Color.black)
-                                    .frame(width: 80, height: 40)
-                                
-                                Text("\(Int(distanceValue))m" )
-                                    .foregroundColor(Color.white)
-                                    .font(.caption)
-                                    .fontWeight(.bold)
-                            }
-                            .offset(x: currentOffset - 12, y: 45)
-                            .transition(.opacity)
+                            toolTipView(offset: currentOffset)
                         }
-                    }
+                    }*/
             }
             .frame(maxHeight: .infinity)
         }
-        .frame(width: 300)
     }
-    
+    /*
+    private func toolTipView(offset: CGFloat) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.black)
+                .frame(width: 80, height: 40)
+            
+            Text("\(Int(distanceValue))m" )
+                .foregroundColor(Color.white)
+                .font(.caption)
+                .fontWeight(.bold)
+        }
+        .offset(x: offset - 12, y: 45)
+        .transition(.opacity)
+    }
+    */
     private func dragGesture(width: CGFloat) -> some Gesture{
         DragGesture()
             .onChanged { value in
                 
                 pendingFilteredDistance?.cancel()
                 isDragging = true
-                
+                isAnimating = false
+                loadingProgress = 0
                 let currentX = value.location.x
                 let limitedX = max(0, min(currentX, width))
                 let ratioDistance = (limitedX / width)
                 distanceValue = rounded((ratioDistance * (range.upperBound - range.lowerBound)) + range.lowerBound)
             }
             .onEnded{ _ in
-                isDragging = false
                 
+                isDragging = false
+                isAnimating = true
+                withAnimation(.linear(duration: 1.0)) {
+                    loadingProgress = 1.0
+                }
                 pendingFilteredDistance?.cancel()
                 
                 let request = DispatchWorkItem {
                     onAction(distanceValue)
+                    isAnimating = false
+                    loadingProgress = 0
                 }
                 pendingFilteredDistance = request
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: request)

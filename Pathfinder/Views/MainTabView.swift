@@ -8,19 +8,23 @@
 import SwiftUI
 
 struct MainTabView: View {
+    @StateObject private var mapService = MapService()
+    
     var body: some View {
         TabView {
-            
-            SearchView()
-                .tabItem {
-                    Label("Search", systemImage: "magnifyingglass")
-                }
+            NavigationStack {
+                SearchView()
+            }
+            .tabItem {
+                Label("Search", systemImage: "magnifyingglass")
+            }
             
             AccountView()
                 .tabItem {
                     Label("Account", systemImage: "person.circle")
                 }
         }
+        .environmentObject(mapService)
     }
 }
 

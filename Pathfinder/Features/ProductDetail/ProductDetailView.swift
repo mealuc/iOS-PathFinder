@@ -6,19 +6,15 @@ struct ProductDetailView: View {
     let productId: String
     let commonWidth: CGFloat = 350
     
-    @State private var storeStocks: [Store] = []
-    @State private var productStocks: [ProductStock] = []
-    @State private var allProductStocks: [ProductStock] = []
     @State private var isLoading: Bool = true
     @State private var isFilterOpen: Bool = false
     @State private var selectedFilter: filterType = .distance
     @State private var errorMessage: String?
-    @State var distanceValue: Double = 500
     @StateObject private var cameraPosition = CameraPosition()
-    @StateObject private var mapService = MapService()
     @StateObject private var historyService = HistoryService()
     @EnvironmentObject var favoriteService: FavoriteService
-
+    @EnvironmentObject var mapService: MapService
+    
     private let stockStoreFetcher = StoreStockService()
     
     var body: some View {
@@ -30,44 +26,60 @@ struct ProductDetailView: View {
                     .cornerRadius(8)
                 
                 MapView(
-                    storeStocks: storeStocks
+                    storeStocks: mapService.storeStocks
                 )
                 .frame(width: commonWidth, height: 300)
                 .background(.blue)
                 .cornerRadius(8)
                 
-                DistanceSliderView(distanceValue: $distanceValue){ filteredDistance in
-                    Task {
-                        guard let userLocation = mapService.userLocation else {
-                            print("User location has not been found yet")
-                            return
-                        }
-                        do {
-                            try await fetchStockAndStores(near: userLocation, radiusMeters: filteredDistance)
-                        } catch {
-                            print("Slider filter error!: \(error.localizedDescription)")
+                HStack(spacing: 20) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.blue)
+                            .frame(width: 80, height: 40)
+                        
+                        Text("\(Int(mapService.distanceValue))m" )
+                            .foregroundColor(Color.white)
+                            .font(.caption)
+                            .fontWeight(.bold)
+                    }
+                    
+                    DistanceSliderView(distanceValue: $mapService.distanceValue){ filteredDistance in
+                        Task {
+                            guard let userLocation = mapService.userLocation else {
+                                print("User location has not been found yet")
+                                return
+                            }
+                            do {
+                                try await fetchStockAndStores(near: userLocation, radiusMeters: filteredDistance)
+                            } catch {
+                                print("Slider filter error!: \(error.localizedDescription)")
+                            }
                         }
                     }
-                }
-                    .frame(width: commonWidth, height: 45)
+                    .frame(height: 45)
                     .zIndex(1)
+                }
+                .frame(width: commonWidth)
                 
                 ProductFilter(
                     commonWidth: commonWidth,
-                    productStocks: productStocks,
-                    storeStocks: storeStocks,
+                    productStocks: mapService.productStocks,
+                    storeStocks: mapService.storeStocks,
                     isFilterOpen: $isFilterOpen,
                     selectedFilter: $selectedFilter,
                     productName: productName
                 )
+                
+                Spacer()
             }
             .onAppear() {
                 Task {
+                    guard mapService.storeStocks.isEmpty else { return }
                     await loadStocks()
                 }
             }
             .foregroundStyle(.white)
-            
             if isFilterOpen {
                 FilterMenuModal(
                     isFilterOpen: $isFilterOpen,
@@ -83,6 +95,7 @@ struct ProductDetailView: View {
     
     func loadStocks() async {
         do{
+            print(mapService.distanceValue)
             await mapService.getUserLocation()
             guard let userLocation = mapService.userLocation else { return }
             try await fetchStockAndStores(near: userLocation, radiusMeters: 500)
@@ -107,9 +120,8 @@ struct ProductDetailView: View {
         let fetchedStocks = try await stockStoreFetcher.fetchStocks(for: productId, in: storeIds)
         let stockedStoreIds = Set(fetchedStocks.map{ $0.storeId })
         
-        storeStocks = fetchedStores.filter { stockedStoreIds.contains($0.storeId) }
-        productStocks = fetchedStocks
-        allProductStocks = fetchedStocks
+        mapService.storeStocks = fetchedStores.filter { stockedStoreIds.contains($0.storeId) }
+        mapService.productStocks = fetchedStocks
     }
 }
 
@@ -117,5 +129,6 @@ struct ProductDetailView: View {
     ProductDetailView(productName: "Test Ürün", productId: "5CCB3AE8-4791-4B83-9498-82AE71BECACE")
         .environmentObject(FavoriteService())
         .environmentObject(HistoryService())
+        .environmentObject(MapService())
 }
 

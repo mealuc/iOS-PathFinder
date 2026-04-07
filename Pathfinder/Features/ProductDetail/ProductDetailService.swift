@@ -95,6 +95,9 @@ class MapService: ObservableObject {
     
     @Published var route: MKRoute?
     @Published var userLocation: CLLocationCoordinate2D?
+    @Published var distanceValue: Double = 500
+    @Published var storeStocks: [Store] = []
+    @Published var productStocks: [ProductStock] = []
     
     func getDirections(to destination: CLLocationCoordinate2D) async -> MKCoordinateRegion? {
         
