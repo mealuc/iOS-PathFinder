@@ -147,6 +147,9 @@ struct ProductDetailView: View {
         mapService.productStocks = mapService.cachedStocks.filter {
             visibleStoreIds.contains( $0.storeId )
         }
+        
+        mapService.route = nil
+        
     }
 }
 

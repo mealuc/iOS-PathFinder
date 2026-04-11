@@ -41,32 +41,11 @@ struct DistanceSliderView: View {
                 CircularLoader(loadingProgress: $loadingProgress, isAnimating: $isAnimating)
                     .offset(x: currentOffset - 12)
                     .gesture(dragGesture(width: width))
-                    /*
-                    .overlay(alignment: .bottom){
-                        if (isDragging){
-                            toolTipView(offset: currentOffset)
-                        }
-                    }*/
             }
             .frame(maxHeight: .infinity)
         }
     }
-    /*
-    private func toolTipView(offset: CGFloat) -> some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color.black)
-                .frame(width: 80, height: 40)
-            
-            Text("\(Int(distanceValue))m" )
-                .foregroundColor(Color.white)
-                .font(.caption)
-                .fontWeight(.bold)
-        }
-        .offset(x: offset - 12, y: 45)
-        .transition(.opacity)
-    }
-    */
+    
     private func dragGesture(width: CGFloat) -> some Gesture{
         DragGesture()
             .onChanged { value in
