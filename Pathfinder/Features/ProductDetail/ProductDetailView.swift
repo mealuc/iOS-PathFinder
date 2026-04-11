@@ -95,7 +95,6 @@ struct ProductDetailView: View {
     
     func loadStocks() async {
         do{
-            print(mapService.distanceValue)
             await mapService.getUserLocation()
             guard let userLocation = mapService.userLocation else { return }
             try await fetchStockAndStores(near: userLocation, radiusMeters: 500)
@@ -108,20 +107,46 @@ struct ProductDetailView: View {
     }
     
     func fetchStockAndStores(near userLocation: CLLocationCoordinate2D, radiusMeters: Double) async throws {
-        let fetchedStores = try await stockStoreFetcher.fetchStores(near: userLocation, radiusMeters: radiusMeters)
         
         let userCoords = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
-        let trimmedStores = fetchedStores.filter {
-            let storeCoords = CLLocation(latitude: $0.storeLatitude, longitude: $0.storeLongitude)
-            return storeCoords.distance(from: userCoords) <= radiusMeters
+        
+        if radiusMeters > mapService.maxFetchedDistance {
+            let fetchedStores = try await stockStoreFetcher.fetchStores(near: userLocation, radiusMeters: radiusMeters)
+            
+            let trimmedStores = fetchedStores.filter {
+                let storeCoords = CLLocation(latitude: $0.storeLatitude, longitude: $0.storeLongitude)
+                return storeCoords.distance(from: userCoords) <= radiusMeters
+            }
+            
+            let storeIds = trimmedStores.map { $0.storeId }
+            let fetchedStocks = try await stockStoreFetcher.fetchStocks(for: productId, in: storeIds)
+            
+            let existingStoresIds = Set(mapService.cachedStores.map { $0.storeId })
+            let newStores = trimmedStores.filter { !existingStoresIds.contains($0.storeId) }
+            mapService.cachedStores.append(contentsOf: newStores)
+            
+            let existingStocksIds = Set(mapService.cachedStocks.map{ $0.storeId })
+            let newStocks = fetchedStocks.filter { !existingStocksIds.contains($0.storeId) }
+            mapService.cachedStocks.append(contentsOf: newStocks)
+            
+            mapService.maxFetchedDistance = radiusMeters
         }
         
-        let storeIds = trimmedStores.map { $0.storeId }
-        let fetchedStocks = try await stockStoreFetcher.fetchStocks(for: productId, in: storeIds)
-        let stockedStoreIds = Set(fetchedStocks.map{ $0.storeId })
         
-        mapService.storeStocks = fetchedStores.filter { stockedStoreIds.contains($0.storeId) }
-        mapService.productStocks = fetchedStocks
+        let stockedStoreIds = Set(mapService.cachedStocks.map{ $0.storeId })
+        
+        let visibleStores = mapService.cachedStores.filter {
+            let storeCoords = CLLocation(latitude: $0.storeLatitude, longitude: $0.storeLongitude)
+            let distance = storeCoords.distance(from: userCoords)
+            return distance <= radiusMeters && stockedStoreIds.contains($0.storeId)
+        }
+        
+        let visibleStoreIds = Set(visibleStores.map { $0.storeId })
+        
+        mapService.storeStocks = visibleStores
+        mapService.productStocks = mapService.cachedStocks.filter {
+            visibleStoreIds.contains( $0.storeId )
+        }
     }
 }
 

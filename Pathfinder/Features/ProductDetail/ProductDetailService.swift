@@ -44,6 +44,7 @@ class LocationManagerAuthorization: NSObject, CLLocationManagerDelegate {
 class StoreStockService: BaseFirestoreService {
     
     func fetchStores(near coordinate: CLLocationCoordinate2D, radiusMeters: Double) async throws -> [Store] {
+        print("fetchStores çalıştı")
         let earthRadius = 6_371_000.0
         let latDelta = (radiusMeters / earthRadius) * (180 / .pi)
         let longDelta = latDelta / cos(coordinate.latitude * .pi / 180)
@@ -67,6 +68,8 @@ class StoreStockService: BaseFirestoreService {
     }
     
     func fetchStocks(for productId: String, in storeIds: [String]) async throws -> [ProductStock] {
+        print("fetchStocks çalıştı")
+
         let chunks = storeIds.chunked(into: 10)
         var allStocks: [ProductStock] = []
         
@@ -98,6 +101,10 @@ class MapService: ObservableObject {
     @Published var distanceValue: Double = 500
     @Published var storeStocks: [Store] = []
     @Published var productStocks: [ProductStock] = []
+    
+    var cachedStores: [Store] = []
+    var cachedStocks: [ProductStock] = []
+    var maxFetchedDistance: Double = 0
     
     func getDirections(to destination: CLLocationCoordinate2D) async -> MKCoordinateRegion? {
         

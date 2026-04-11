@@ -68,6 +68,9 @@ struct SearchView: View {
             set: { if !$0 {
                 mapService.storeStocks = []
                 mapService.productStocks = []
+                mapService.cachedStores = []
+                mapService.cachedStocks = []
+                mapService.maxFetchedDistance = 0
                 mapService.distanceValue = 500
                 mapService.route = nil
                 selectedProductId = nil
