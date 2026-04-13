@@ -11,7 +11,6 @@ import FirebaseAuth
 import SwiftUI
 
 class AccountService {
-    @EnvironmentObject var accountModel: AccountModel
     //User Logout area
     static func logout(accountModel: AccountModel, historyService: HistoryService, completion: @escaping (Bool) -> Void) {
         do {
@@ -40,7 +39,7 @@ class AccountService {
                 DispatchQueue.main.async {
                     user.name = documentData?["name"] as? String ?? "Kullanıcı"
                     user.surname = documentData?["surname"] as? String ?? ""
-                } // We use DispatchQueue because we want ui processes on main thread (all of ui proccesses must processed on main thread if not app will freeze)
+                }
             }
         }
     }
@@ -116,25 +115,6 @@ class FavoriteService: ObservableObject {
         }
     }
     
-    func fetchUserFavorites() async throws {
-        do {
-            guard let userId = currentUserId else {
-                userFavorites = []
-                return
-            }
-            
-            let query = try await db.collection("favorites").whereField("userId", isEqualTo: userId).getDocuments()
-            
-            userFavorites = query.documents.compactMap { doc in
-                try? doc.data(as: Favorite.self)
-            }
-        } catch {
-            print("Error when fetching favorites: \(error)")
-            throw error
-        }
-        
-    }
-    
     func removeFavorite(storeId: String, productId: String) async throws -> String {
         do {
             guard let userId = currentUserId else { return "" }
@@ -155,9 +135,7 @@ class FavoriteService: ObservableObject {
 
 class HistoryService: ObservableObject {
     @Published var history: [ViewedItem] = []
-    
-    private let key = "viewed_history"
-    
+        
     func historyKey (for uid: String) -> String {
         return "viewed_history_\(uid)"
     }

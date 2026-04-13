@@ -9,15 +9,7 @@ import Foundation
 import SwiftUI
 
 class AccountModel: ObservableObject {
-    @Published private var _errorMessage: String?
-    
-    var errorMessage: String? {
-        get {
-            _errorMessage
-        } set {
-            _errorMessage = newValue
-        }
-    }
+    @Published var errorMessage: String?
 }
 
 struct Favorite: Identifiable, Codable {

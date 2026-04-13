@@ -1,10 +1,3 @@
-//
-//  SearchView.swift
-//  Pathfinder
-//
-//  Created by EmreAluc on 26.01.2025.
-//
-
 import SwiftUI
 
 struct SearchView: View {

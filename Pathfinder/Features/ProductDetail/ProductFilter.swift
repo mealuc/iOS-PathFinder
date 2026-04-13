@@ -75,7 +75,6 @@ struct ProductFilter: View {
         .frame(width: commonWidth)
         .onChange(of: storeStocks){
             Task {
-                await mapService.getUserLocation()
                 if let _ = mapService.userLocation {
                     distanceFilter = await mapService.calculateDistances(for: storeStocks)
                 } else {

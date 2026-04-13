@@ -25,40 +25,6 @@ class StoreService: BaseFirestoreService, ObservableObject {
     }
 }
 
-class AddStores: BaseFirestoreService {
-    
-    func addStore() {
-        let randomStoreName = "Store \(Int.random(in: 1...1000))"
-        let randomStoreId = UUID().uuidString
-        
-        let newStoreData: [String: Any] = [
-            "storeName": randomStoreName,
-            "storeId": randomStoreId,
-            "storeOwnerId": "1331",
-            "storeAddress": "123 Main St",
-            "storeCity": "Karabuk",
-            "storeState": "CA",
-            "storeZip": "90210",
-            "storePhone": "(555) 555-5555",
-            "storeEmail": "newstore@example.com",
-            "storeLatitude": 34.052234,
-            "storeLongitude": -118.243685,
-            "storeRating": 4.5,
-            "storeLastUpdated": FieldValue.serverTimestamp()
-        ]
-        
-        
-        db.collection("stores").addDocument(data: newStoreData) { error in
-            if let error = error {
-                print("Error adding store: \(error.localizedDescription)")
-            }
-            else {
-                print("Store added successfully")
-            }
-        }
-    }
-}
-
 class ProductService: BaseFirestoreService, ObservableObject {
     @Published var products: [Product] = []
     @Published var hasMoreProducts: Bool = true
@@ -115,6 +81,40 @@ class ProductService: BaseFirestoreService, ObservableObject {
                     self.hasMoreProducts = false
                 }
             }
+    }
+}
+/*
+class AddStores: BaseFirestoreService {
+    
+    func addStore() {
+        let randomStoreName = "Store \(Int.random(in: 1...1000))"
+        let randomStoreId = UUID().uuidString
+        
+        let newStoreData: [String: Any] = [
+            "storeName": randomStoreName,
+            "storeId": randomStoreId,
+            "storeOwnerId": "1331",
+            "storeAddress": "123 Main St",
+            "storeCity": "Karabuk",
+            "storeState": "CA",
+            "storeZip": "90210",
+            "storePhone": "(555) 555-5555",
+            "storeEmail": "newstore@example.com",
+            "storeLatitude": 34.052234,
+            "storeLongitude": -118.243685,
+            "storeRating": 4.5,
+            "storeLastUpdated": FieldValue.serverTimestamp()
+        ]
+        
+        
+        db.collection("stores").addDocument(data: newStoreData) { error in
+            if let error = error {
+                print("Error adding store: \(error.localizedDescription)")
+            }
+            else {
+                print("Store added successfully")
+            }
+        }
     }
 }
 
@@ -186,4 +186,4 @@ class AddProductStock: BaseFirestoreService {
         }
     }
 }
-
+*/

@@ -2,7 +2,6 @@ import SwiftUI
 import MapKit
 
 struct MapView: View {
-    let locationAuth = LocationManagerAuthorization()
     let storeStocks: [Store]
     
     @EnvironmentObject var mapService: MapService
@@ -44,9 +43,6 @@ struct MapView: View {
                     .stroke(Color.green, lineWidth: 4)
             }
         }
-        .onAppear() {
-            locationAuth.checkLocationAuthorizationStatus()
-        }
         .mapControls {
             MapUserLocationButton()
             MapCompass()
@@ -57,7 +53,6 @@ struct MapView: View {
 }
 
 #Preview {
-    // 🔹 Örnek veriler (modelinle birebir uyumlu)
     let sampleStores = [
         Store(
             id: nil,
@@ -98,6 +93,4 @@ struct MapView: View {
 
 extension CLLocationCoordinate2D {
     static let Home = CLLocationCoordinate2D(latitude: 41.2352139, longitude: 32.6666362)
-    static let Arrival = CLLocationCoordinate2D(latitude: 41.239475, longitude: 32.663714)
-    
 }
