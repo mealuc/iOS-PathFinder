@@ -29,18 +29,12 @@ struct AccountView: View {
             HStack{
                 Circle()
                     .frame(width: 60, height: 60)
-                    .foregroundStyle(.gray .opacity(0.3))
+                    .foregroundStyle(.blue .opacity(1))
                     .padding(.leading)
                 Text("Hello, \(userSession.name.isEmpty ? "User" : userSession.name) \(userSession.surname.isEmpty ? "" : userSession.surname)")
                     .fontWeight(.bold)
                 
                 Spacer()
-                
-                Button("Edit"){
-                    
-                }
-                .foregroundStyle(.blue)
-                .fontWeight(.bold)
             }
             .padding()
             
