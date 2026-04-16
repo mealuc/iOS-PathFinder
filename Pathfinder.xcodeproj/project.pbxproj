@@ -44,6 +44,11 @@
 			path = Pathfinder;
 			sourceTree = "<group>";
 		};
+		30D3660F2F913CCF00ABA505 /* Assets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Assets;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,6 +74,7 @@
 		300F84762D35352C0082581F = {
 			isa = PBXGroup;
 			children = (
+				30D3660F2F913CCF00ABA505 /* Assets */,
 				30D5521E2EA2A0960049BE41 /* Pathfinder.xctestplan */,
 				30EC55F32F100A210070538A /* Pathfinder.xcodeproj */,
 				30D5521D2EA2A0880049BE41 /* MyLocation.gpx */,
