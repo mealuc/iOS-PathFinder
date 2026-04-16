@@ -53,15 +53,19 @@ The project is built with a focus on modularity and real-time performance using 
 ## 📸 Demos
 
 | Search & Discovery |
+
 | ![Search GIF](https://github.com/mealuc/iOS-PathFinder/blob/8a9921f459faaf30593a5d4706926bce4e6c3780/Assets/search.gif) 
 
 | Map Interaction |
+
 | ![Map GIF](https://github.com/mealuc/iOS-PathFinder/blob/8a9921f459faaf30593a5d4706926bce4e6c3780/Assets/mapinteraction.gif) 
 
 | Profile & Favorites |
+
 | ![Profile GIF](https://github.com/mealuc/iOS-PathFinder/blob/8a9921f459faaf30593a5d4706926bce4e6c3780/Assets/account.gif) 
 
 | Filter Product |
+
 | ![Filter GIF](https://github.com/mealuc/iOS-PathFinder/blob/8a9921f459faaf30593a5d4706926bce4e6c3780/Assets/filter.gif)
 
 ---
