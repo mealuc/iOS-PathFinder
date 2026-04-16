@@ -50,7 +50,7 @@ The project is built with a focus on modularity and real-time performance using 
 
 ---
 
-## 📸 Demos
+## 📸 Demos and Screenshots
 
 | Search & Discovery |
 
@@ -67,6 +67,11 @@ The project is built with a focus on modularity and real-time performance using 
 | Filter Product |
 
 ![Filter GIF](https://github.com/mealuc/iOS-PathFinder/blob/8eb0c66ec4de82d2638a109737f804ebab558c59/Assets/filternewgif.gif)
+
+| Login and Register |
+
+![Login](https://github.com/mealuc/iOS-PathFinder/blob/a5dd648e02624679239b420c936af369224c6a58/Assets/loginpic.png)
+![Register](https://github.com/mealuc/iOS-PathFinder/blob/a5dd648e02624679239b420c936af369224c6a58/Assets/registerpic.png)
 
 ---
 
