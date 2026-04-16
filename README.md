@@ -70,8 +70,7 @@ The project is built with a focus on modularity and real-time performance using 
 
 | Login and Register |
 
-![Login](https://github.com/mealuc/iOS-PathFinder/blob/a5dd648e02624679239b420c936af369224c6a58/Assets/loginpic.png)
-![Register](https://github.com/mealuc/iOS-PathFinder/blob/a5dd648e02624679239b420c936af369224c6a58/Assets/registerpic.png)
+![Login](https://github.com/mealuc/iOS-PathFinder/blob/a5dd648e02624679239b420c936af369224c6a58/Assets/loginpic.png)![Register](https://github.com/mealuc/iOS-PathFinder/blob/a5dd648e02624679239b420c936af369224c6a58/Assets/registerpic.png)
 
 ---
 
